@@ -1,0 +1,15 @@
+{
+  "name": "langchain-chatbot",
+  "version": "1.0.0",
+  "description": "A simple LangChain chatbot implementation",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@langchain/openai": "^0.0.14",
+    "dotenv": "^16.4.1",
+    "langchain": "^0.1.17"
+  }
+} 
