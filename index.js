@@ -1,7 +1,7 @@
-import { ChatOpenAI } from "@langchain/openai";
-import { HumanMessage, SystemMessage } from "@langchain/core/messages";
-import dotenv from "dotenv";
-import readline from "readline";
+const { ChatOpenAI } = require("@langchain/openai");
+const { HumanMessage, SystemMessage } = require("@langchain/core/messages");
+const dotenv = require("dotenv");
+const readline = require("readline");
 
 // Load environment variables
 dotenv.config();
