@@ -98,6 +98,11 @@
 import Header from './components/Header.vue'
 import axios from 'axios'
 
+// Configure axios base URL for production
+if (import.meta.env.PROD) {
+  axios.defaults.baseURL = window.location.origin;
+}
+
 export default {
   name: 'App',
   components: {
@@ -153,7 +158,7 @@ export default {
 
       try {
         // Make API call to the server
-        const response = await axios.post('https://chatbot-production-ceb5.up.railway.app:3001', {
+        const response = await axios.post('/api/chat', {
           message: messageText
         });
 
