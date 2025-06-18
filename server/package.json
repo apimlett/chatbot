@@ -10,11 +10,10 @@
     "postinstall": "echo 'Post-install complete'"
   },
   "dependencies": {
-    "@langchain/openai": "^0.0.14",
-    "@langchain/core": "^0.1.17",
     "cors": "^2.8.5",
     "dotenv": "^16.4.1",
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "openai": "^4.20.1"
   },
   "devDependencies": {
     "nodemon": "^3.0.3"

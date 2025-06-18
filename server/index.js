@@ -1,8 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
-const { ChatOpenAI } = require("@langchain/openai");
-const { HumanMessage, SystemMessage } = require("@langchain/core/messages");
+const OpenAI = require("openai");
 
 // Load environment variables
 dotenv.config();
@@ -26,17 +25,16 @@ const port = process.env.PORT || 80;
 app.use(cors());
 app.use(express.json());
 
-// Initialize the chat model
-const chat = new ChatOpenAI({
-  modelName: "gpt-3.5-turbo",
-  temperature: 0.7,
-  openAIApiKey: process.env.OPENAI_API_KEY,
+// Initialize OpenAI client
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 // System message to set the context
-const systemMessage = new SystemMessage(
-  "You are Mandobot, a helpful AI assistant for Mando Group. You are a sophiticated AI consultant for a digital agency called Mando Group and can provide useful advice to potential clients about how Mando can support their agentic needs.  When someone says hi, you should introduce yourself as such and offer some great AI nuggets of info."
-);
+const systemMessage = {
+  role: "system",
+  content: "You are Mandobot, a helpful AI assistant for Mando Group. You are a sophiticated AI consultant for a digital agency called Mando Group and can provide useful advice to potential clients about how Mando can support their agentic needs. When someone says hi, you should introduce yourself as such and offer some great AI nuggets of info."
+};
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -58,15 +56,21 @@ app.post('/api/chat', async (req, res) => {
       return res.status(400).json({ error: 'Message is required' });
     }
 
-    // Build the message array: system message and current user message
-    const messagesToSend = [
+    // Build the messages array
+    const messages = [
       systemMessage,
-      new HumanMessage(message),
+      { role: "user", content: message }
     ];
 
-    const response = await chat.invoke(messagesToSend);
+    const completion = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: messages,
+      temperature: 0.7,
+    });
 
-    res.json({ response: response.content });
+    const response = completion.choices[0].message.content;
+
+    res.json({ response: response });
   } catch (error) {
     console.error('Error:', error);
     res.status(500).json({ 

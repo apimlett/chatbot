@@ -1,5 +1,4 @@
-const { ChatOpenAI } = require("@langchain/openai");
-const { HumanMessage, SystemMessage } = require("@langchain/core/messages");
+const OpenAI = require("openai");
 const dotenv = require("dotenv");
 const readline = require("readline");
 
@@ -12,17 +11,16 @@ const rl = readline.createInterface({
   output: process.stdout
 });
 
-// Initialize the chat model
-const chat = new ChatOpenAI({
-  modelName: "gpt-3.5-turbo",
-  temperature: 0.7,
-  openAIApiKey: process.env.OPENAI_API_KEY,
+// Initialize OpenAI client
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 // System message to set the context
-const systemMessage = new SystemMessage(
-  "You are a helpful AI assistant. You provide clear, concise, and accurate responses."
-);
+const systemMessage = {
+  role: "system",
+  content: "You are a helpful AI assistant. You provide clear, concise, and accurate responses."
+};
 
 async function chatLoop() {
   console.log("Chatbot initialized! Type 'exit' to end the conversation.");
@@ -39,12 +37,17 @@ async function chatLoop() {
     }
 
     try {
-      const response = await chat.invoke([
-        systemMessage,
-        new HumanMessage(userInput),
-      ]);
+      const completion = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        messages: [
+          systemMessage,
+          { role: "user", content: userInput }
+        ],
+        temperature: 0.7,
+      });
 
-      console.log("\nAssistant:", response.content, "\n");
+      const response = completion.choices[0].message.content;
+      console.log("\nAssistant:", response, "\n");
     } catch (error) {
       console.error("Error:", error.message);
     }
