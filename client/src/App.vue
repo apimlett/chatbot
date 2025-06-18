@@ -153,7 +153,7 @@ export default {
 
       try {
         // Make API call to the server
-        const response = await axios.post('http://localhost:3001/api/chat', {
+        const response = await axios.post('https://chatbot-production-ceb5.up.railway.app:3001', {
           message: messageText
         });
 
