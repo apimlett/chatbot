@@ -3,14 +3,24 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { ChatOpenAI } from "@langchain/openai";
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
-import { MemoryVectorStore } from "langchain/vectorstores/memory";
-import { OpenAIEmbeddings } from "@langchain/openai";
 
 // Load environment variables
 dotenv.config();
 
+// Set default NODE_ENV if not provided
+if (!process.env.NODE_ENV) {
+  process.env.NODE_ENV = 'production';
+  console.log("NODE_ENV not set, defaulting to 'production'");
+}
+
+// Validate required environment variables
+if (!process.env.OPENAI_API_KEY) {
+  console.error("ERROR: OPENAI_API_KEY environment variable is required");
+  process.exit(1);
+}
+
 const app = express();
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 80;
 
 // Middleware
 app.use(cors());
@@ -23,9 +33,6 @@ const chat = new ChatOpenAI({
   openAIApiKey: process.env.OPENAI_API_KEY,
 });
 
-// Initialize the in-memory vector store for RAG
-const vectorStore = new MemoryVectorStore(new OpenAIEmbeddings({ openAIApiKey: process.env.OPENAI_API_KEY }));
-
 // System message to set the context
 const systemMessage = new SystemMessage(
   "You are Mandobot, a helpful AI assistant for Mando Group. You are a sophiticated AI consultant for a digital agency called Mando Group and can provide useful advice to potential clients about how Mando can support their agentic needs.  When someone says hi, you should introduce yourself as such and offer some great AI nuggets of info."
@@ -33,7 +40,13 @@ const systemMessage = new SystemMessage(
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok' });
+  res.json({ 
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    nodeVersion: process.version,
+    nodeEnv: process.env.NODE_ENV,
+    port: process.env.PORT
+  });
 });
 
 // Chat endpoint
@@ -45,33 +58,29 @@ app.post('/api/chat', async (req, res) => {
       return res.status(400).json({ error: 'Message is required' });
     }
 
-    // Add the new user message to the vector store
-    await vectorStore.addDocuments([{ pageContent: message, metadata: { role: "user" } }]);
-
-    // Retrieve the top 5 most relevant previous messages for context
-    const relevantDocs = await vectorStore.similaritySearch(message, 5);
-    const contextMessages = relevantDocs.map(doc => new HumanMessage(doc.pageContent));
-
-    // Build the message array: system, context, current user message
+    // Build the message array: system message and current user message
     const messagesToSend = [
       systemMessage,
-      ...contextMessages,
       new HumanMessage(message),
     ];
 
     const response = await chat.invoke(messagesToSend);
 
-    // Add the assistant's response to the vector store as well
-    await vectorStore.addDocuments([{ pageContent: response.content, metadata: { role: "assistant" } }]);
-
     res.json({ response: response.content });
   } catch (error) {
     console.error('Error:', error);
-    res.status(500).json({ error: 'Failed to process chat message' });
+    res.status(500).json({ 
+      error: 'Failed to process chat message',
+      details: error.message 
+    });
   }
 });
 
 // Start server
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
+  console.log(`Node version: ${process.version}`);
+  console.log(`Environment: ${process.env.NODE_ENV}`);
+  console.log(`Port: ${port}`);
+  console.log(`OpenAI API Key configured: ${process.env.OPENAI_API_KEY ? 'Yes' : 'No'}`);
 });
