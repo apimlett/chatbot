@@ -1,0 +1,10 @@
+[build]
+command = "npm install"
+cwd = "server"
+
+[start]
+command = "npm run start"
+cwd = "server"
+
+[env]
+NODE_ENV = "production"
