@@ -26,7 +26,8 @@ const app = express();
 const port = process.env.PORT || 3001;
 
 // Configure Express to trust proxies (required for hosting platforms like Railway, Heroku, etc.)
-app.set('trust proxy', true);
+// Trust only the first proxy (Railway's load balancer)
+app.set('trust proxy', 1);
 
 // Security middleware
 app.use(helmet());
