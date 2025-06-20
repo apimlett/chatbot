@@ -25,6 +25,9 @@ if (!process.env.OPENAI_API_KEY) {
 const app = express();
 const port = process.env.PORT || 3001;
 
+// Configure Express to trust proxies (required for hosting platforms like Railway, Heroku, etc.)
+app.set('trust proxy', true);
+
 // Security middleware
 app.use(helmet());
 
