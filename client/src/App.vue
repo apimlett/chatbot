@@ -119,12 +119,19 @@ export default {
         hour: 'numeric', 
         minute: '2-digit',
         hour12: false 
-      })
+      }),
+      timeInterval: null
     }
   },
   created() {
     // Update time every minute
-    setInterval(this.updateTime, 60000);
+    this.timeInterval = setInterval(this.updateTime, 60000);
+  },
+  beforeUnmount() {
+    // Clean up the interval to prevent memory leak
+    if (this.timeInterval) {
+      clearInterval(this.timeInterval);
+    }
   },
   methods: {
     updateTime() {
