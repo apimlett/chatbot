@@ -1,10 +1,14 @@
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
+const { body, validationResult } = require("express-validator");
 const dotenv = require("dotenv");
 const OpenAI = require("openai");
+const path = require("path");
 
 // Load environment variables
-dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 // Set default NODE_ENV if not provided
 if (!process.env.NODE_ENV) {
@@ -19,11 +23,40 @@ if (!process.env.OPENAI_API_KEY) {
 }
 
 const app = express();
-const port = process.env.PORT || 80;
+const port = process.env.PORT || 3001;
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+// Security middleware
+app.use(helmet());
+
+// CORS configuration
+const allowedOrigins = process.env.ALLOWED_ORIGINS 
+  ? process.env.ALLOWED_ORIGINS.split(',')
+  : ['http://localhost:3000', 'http://localhost:5173'];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
+
+// Body parsing with size limits
+app.use(express.json({ limit: '10mb' }));
+
+// Rate limiting
+const chatLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: { error: 'Too many chat requests, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -47,14 +80,27 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Chat endpoint
-app.post('/api/chat', async (req, res) => {
+// Chat endpoint with validation and rate limiting
+app.post('/api/chat', 
+  chatLimiter,
+  [
+    body('message')
+      .isLength({ min: 1, max: 2000 })
+      .withMessage('Message must be between 1 and 2000 characters')
+      .trim()
+  ],
+  async (req, res) => {
   try {
-    const { message } = req.body;
-    
-    if (!message) {
-      return res.status(400).json({ error: 'Message is required' });
+    // Check validation results
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ 
+        error: 'Invalid input',
+        details: errors.array().map(err => err.msg)
+      });
     }
+
+    const { message } = req.body;
 
     // Build the messages array
     const messages = [
@@ -72,10 +118,15 @@ app.post('/api/chat', async (req, res) => {
 
     res.json({ response: response });
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Chat API Error:', {
+      message: error.message,
+      stack: error.stack,
+      timestamp: new Date().toISOString()
+    });
+    
+    // Don't expose internal error details to client
     res.status(500).json({ 
-      error: 'Failed to process chat message',
-      details: error.message 
+      error: 'Internal server error. Please try again later.'
     });
   }
 });

@@ -1,7 +1,41 @@
 {
-    "folders": [
-        {
-            "path": "."
-        }
+  "folders": [
+    {
+      "name": "Root",
+      "path": "."
+    },
+    {
+      "name": "Client",
+      "path": "./client"
+    },
+    {
+      "name": "Server", 
+      "path": "./server"
+    }
+  ],
+  "settings": {
+    "workbench.colorCustomizations": {
+      "titleBar.activeBackground": "#663399",
+      "titleBar.activeForeground": "#ffffff",
+      "titleBar.inactiveBackground": "#4d2673",
+      "titleBar.inactiveForeground": "#cccccc"
+    },
+    "typescript.preferences.includePackageJsonAutoImports": "auto",
+    "javascript.preferences.includePackageJsonAutoImports": "auto",
+    "eslint.workingDirectories": ["client", "server"],
+    "files.exclude": {
+      "**/node_modules": true,
+      "**/dist": true,
+      "**/build": true
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "Vue.vscode-typescript-vue-plugin",
+      "Vue.volar",
+      "bradlc.vscode-tailwindcss",
+      "esbenp.prettier-vscode",
+      "dbaeumer.vscode-eslint"
     ]
+  }
 }
