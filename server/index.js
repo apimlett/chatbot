@@ -5,9 +5,10 @@ const rateLimit = require("express-rate-limit");
 const { body, validationResult } = require("express-validator");
 const dotenv = require("dotenv");
 const OpenAI = require("openai");
+const path = require("path");
 
 // Load environment variables
-dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 // Set default NODE_ENV if not provided
 if (!process.env.NODE_ENV) {
@@ -22,7 +23,7 @@ if (!process.env.OPENAI_API_KEY) {
 }
 
 const app = express();
-const port = process.env.PORT || 80;
+const port = process.env.PORT || 3001;
 
 // Security middleware
 app.use(helmet());
@@ -87,7 +88,6 @@ app.post('/api/chat',
       .isLength({ min: 1, max: 2000 })
       .withMessage('Message must be between 1 and 2000 characters')
       .trim()
-      .escape()
   ],
   async (req, res) => {
   try {
