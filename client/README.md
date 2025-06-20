@@ -17,7 +17,10 @@ cp .env.example .env
 ## Environment Variables
 
 - `API_URL`: Base URL for API proxy target in development (defaults to `http://localhost:3001`)
+- `VITE_API_BASE_URL`: Base URL for API calls in production (set this to your server URL, e.g., `https://your-api-server.com`)
 - `VITE_API_URL`: Base URL for API calls (used in tests, defaults to `http://localhost:3001`)
+
+**Important for Production**: Set `VITE_API_BASE_URL` to your server's URL to avoid the client calling its own origin instead of the API server.
 
 ## Development
 

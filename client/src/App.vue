@@ -26,7 +26,7 @@
 import axios from 'axios';
 
 if (import.meta.env.PROD) {
-  axios.defaults.baseURL = window.location.origin;
+  axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL || window.location.origin;
 }
 
 export default {
