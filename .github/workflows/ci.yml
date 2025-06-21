@@ -23,30 +23,26 @@ jobs:
         node-version: ${{ matrix.node-version }}
     
     - name: Install Client Dependencies
+      working-directory: ./client
       run: |
-        cd client
         npm install
-        npm list --depth=0
+        ls -la node_modules/.bin/
     
-    - name: Install Server Dependencies
+    - name: Install Server Dependencies  
+      working-directory: ./server
       run: |
-        cd server
         npm ci
-        npm list --depth=0
+        ls -la node_modules/.bin/
     
     - name: Run Client Tests
+      working-directory: ./client
       run: |
-        cd client
-        which npm
-        npm --version
-        npm run test:coverage
+        npx vitest run --coverage
     
     - name: Run Server Tests
+      working-directory: ./server
       run: |
-        cd server
-        which npm
-        npm --version
-        npm run test:coverage
+        npx jest --coverage
     
     
     - name: Upload Coverage Reports
@@ -68,15 +64,21 @@ jobs:
       with:
         node-version: 20.x
     
-    - name: Install Dependencies
-      run: |
-        cd client && npm install
-        cd ../server && npm ci
+    - name: Install Client Dependencies
+      working-directory: ./client
+      run: npm install
+      
+    - name: Install Server Dependencies
+      working-directory: ./server  
+      run: npm ci
     
-    - name: Run Linting
-      run: |
-        cd client && npm run lint --if-present
-        cd ../server && npm run lint --if-present
+    - name: Run Client Linting
+      working-directory: ./client
+      run: npm run lint --if-present
+      
+    - name: Run Server Linting
+      working-directory: ./server
+      run: npm run lint --if-present
 
   security-scan:
     runs-on: ubuntu-latest
@@ -90,20 +92,20 @@ jobs:
         node-version: 20.x
     
     - name: Install Client Dependencies
-      run: |
-        cd client
-        npm install
+      working-directory: ./client
+      run: npm install
     
     - name: Install Server Dependencies
-      run: |
-        cd server
-        npm ci
+      working-directory: ./server
+      run: npm ci
     
-    - name: Run Security Audit
-      run: |
-        echo "Checking for high/critical vulnerabilities..."
-        cd client && (npm audit --audit-level=high || echo "Client audit: no high/critical vulnerabilities")
-        cd ../server && (npm audit --audit-level=high || echo "Server audit: no high/critical vulnerabilities")
+    - name: Run Client Security Audit
+      working-directory: ./client
+      run: npm audit --audit-level=high || echo "Client audit: no high/critical vulnerabilities"
+      
+    - name: Run Server Security Audit  
+      working-directory: ./server
+      run: npm audit --audit-level=high || echo "Server audit: no high/critical vulnerabilities"
 
   build:
     needs: [test, lint, security-scan]
@@ -118,14 +120,12 @@ jobs:
         node-version: 20.x
     
     - name: Install Client Dependencies
-      run: |
-        cd client
-        npm install
+      working-directory: ./client
+      run: npm install
     
     - name: Build Client
-      run: |
-        cd client
-        npm run build
+      working-directory: ./client
+      run: npm run build
     
     - name: Upload Build Artifacts
       uses: actions/upload-artifact@v3
