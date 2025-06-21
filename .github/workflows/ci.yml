@@ -22,17 +22,41 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     
+    - name: Verify Node.js Setup
+      run: |
+        echo "Node version: $(node --version)"
+        echo "NPM version: $(npm --version)"
+        echo "Current directory: $(pwd)"
+        echo "Directory contents:"
+        ls -la
+    
     - name: Install Client Dependencies
       working-directory: ./client
       run: |
+        echo "Installing client dependencies..."
         npm install
-        ls -la node_modules/.bin/
+        echo "Installation complete. Checking for node_modules..."
+        ls -la node_modules/ || echo "node_modules directory not found"
+        if [ -d "node_modules/.bin" ]; then
+          echo "Found .bin directory:"
+          ls -la node_modules/.bin/
+        else
+          echo ".bin directory does not exist"
+        fi
     
     - name: Install Server Dependencies  
       working-directory: ./server
       run: |
+        echo "Installing server dependencies..."
         npm ci
-        ls -la node_modules/.bin/
+        echo "Installation complete. Checking for node_modules..."
+        ls -la node_modules/ || echo "node_modules directory not found"
+        if [ -d "node_modules/.bin" ]; then
+          echo "Found .bin directory:"
+          ls -la node_modules/.bin/
+        else
+          echo ".bin directory does not exist"
+        fi
     
     - name: Run Client Tests
       working-directory: ./client
