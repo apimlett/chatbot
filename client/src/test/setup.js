@@ -1,6 +1,7 @@
 import { beforeAll, afterAll, afterEach } from 'vitest'
 import { setupServer } from 'msw/node'
 import { http, HttpResponse } from 'msw'
+import { createPinia, setActivePinia } from 'pinia'
 
 // Create MSW server instance
 export const server = setupServer(
@@ -18,10 +19,18 @@ export const server = setupServer(
 )
 
 // Start server before all tests
-beforeAll(() => server.listen({ onUnhandledRequest: 'warn' }))
+beforeAll(() => {
+  server.listen({ onUnhandledRequest: 'warn' })
+  // Setup Pinia for tests
+  setActivePinia(createPinia())
+})
 
 // Reset handlers after each test
-afterEach(() => server.resetHandlers())
+afterEach(() => {
+  server.resetHandlers()
+  // Reset Pinia state for each test
+  setActivePinia(createPinia())
+})
 
 // Close server after all tests
 afterAll(() => server.close()) 

@@ -42,6 +42,7 @@
 </template>
 
 <script>
+import { useChatStore } from './stores/chat.js'
 import axios from 'axios';
 
 if (import.meta.env.PROD) {
@@ -50,49 +51,34 @@ if (import.meta.env.PROD) {
 
 export default {
   name: 'App',
+  setup() {
+    const chatStore = useChatStore()
+    return { chatStore }
+  },
   data() {
     return {
-      messages: [
-        { id: 1, text: "Hello! I'm Cogfusion.ai. How can I help you today?", type: 'received' }
-      ],
       newMessage: '',
-      isLoading: false,
       viewportHeight: window.innerHeight,
+    }
+  },
+  computed: {
+    messages() {
+      return this.chatStore.displayMessages
+    },
+    isLoading() {
+      return this.chatStore.isLoading
     }
   },
   methods: {
     async sendMessage() {
-      if (!this.newMessage.trim() || this.isLoading) return;
-
-      this.messages.push({
-        id: Date.now(),
-        text: this.newMessage,
-        type: 'sent',
-      });
+      if (!this.newMessage.trim()) return;
       
       const messageText = this.newMessage;
       this.newMessage = '';
-      this.isLoading = true;
       this.scrollToBottom();
 
-      try {
-        const response = await axios.post('/api/chat', { message: messageText });
-        this.messages.push({
-          id: Date.now(),
-          text: response.data.response,
-          type: 'received',
-        });
-      } catch (error) {
-        console.error('Error sending message:', error);
-        this.messages.push({
-          id: Date.now(),
-          text: 'Sorry, I encountered an error. Please try again.',
-          type: 'received',
-        });
-      } finally {
-        this.isLoading = false;
-        this.scrollToBottom();
-      }
+      await this.chatStore.sendMessage(messageText);
+      this.scrollToBottom();
     },
     scrollToBottom() {
       this.$nextTick(() => {
@@ -107,6 +93,9 @@ export default {
     }
   },
   mounted() {
+    // Initialize chat session
+    this.chatStore.initializeSession();
+    
     this.scrollToBottom();
     // Update viewport height when window resizes (address bar shows/hides)
     window.addEventListener('resize', this.updateViewportHeight);
