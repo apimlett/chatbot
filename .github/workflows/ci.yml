@@ -128,12 +128,12 @@ jobs:
     
     
     - name: Upload Coverage Reports
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       with:
-        directory: ./coverage
+        files: ./client/coverage/coverage-final.json,./server/coverage/coverage-final.json
         flags: unittests
         name: codecov-umbrella
-        fail_ci_if_error: true
+        fail_ci_if_error: false
 
   lint:
     runs-on: ubuntu-latest
