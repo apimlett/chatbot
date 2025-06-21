@@ -4,14 +4,7 @@
       <h1 class="text-xl font-medium text-gray-800 m-0">Cogfusion.ai</h1>
     </div>
     <div class="flex-1 overflow-y-auto p-4" ref="messageList">
-      <div v-for="message in messages" :key="message.id" class="mb-4 flex" :class="message.type === 'sent' ? 'justify-end' : 'justify-start'">
-        <div class="px-4 py-3 rounded-[1.25rem] max-w-[75%] leading-relaxed" 
-             :class="message.type === 'sent' 
-               ? 'bg-blue-500 text-white rounded-br-sm' 
-               : 'bg-gray-200 text-gray-800 rounded-bl-sm'">
-          <p class="m-0">{{ message.text }}</p>
-        </div>
-      </div>
+      <ChatMessage v-for="message in messages" :key="message.id" :message="message" />
       <div v-if="isLoading" class="mb-4 flex justify-start">
         <div class="px-4 py-3 rounded-[1.25rem] max-w-[75%] leading-relaxed bg-gray-200 text-gray-800 rounded-bl-sm">
           <div class="flex gap-1 items-center justify-center h-full">
@@ -43,6 +36,7 @@
 
 <script>
 import { useChatStore } from './stores/chat.js'
+import ChatMessage from './components/ChatMessage.vue'
 import axios from 'axios';
 
 if (import.meta.env.PROD) {
@@ -51,6 +45,9 @@ if (import.meta.env.PROD) {
 
 export default {
   name: 'App',
+  components: {
+    ChatMessage
+  },
   setup() {
     const chatStore = useChatStore()
     return { chatStore }

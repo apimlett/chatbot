@@ -212,7 +212,7 @@ jobs:
       run: npm run build
     
     - name: Upload Build Artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: client-build
         path: client/dist/
@@ -226,9 +226,10 @@ jobs:
     - uses: actions/checkout@v4
     
     - name: Deploy Server to Railway
-      uses: railwayapp/cli@v3
-      with:
-        command: 'deploy --service server'
+      run: |
+        curl -fsSL https://railway.app/install.sh | sh
+        export PATH=$PATH:$HOME/.railway/bin
+        railway deploy --service server
       env:
         RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
     
@@ -277,9 +278,10 @@ jobs:
     - uses: actions/checkout@v4
     
     - name: Deploy to Staging (Railway)
-      uses: railwayapp/cli@v3
-      with:
-        command: 'deploy --service server --environment staging'
+      run: |
+        curl -fsSL https://railway.app/install.sh | sh
+        export PATH=$PATH:$HOME/.railway/bin
+        railway deploy --service server --environment staging
       env:
         RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
     
