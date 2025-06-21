@@ -36,6 +36,10 @@ jobs:
         echo "Installing client dependencies..."
         echo "NODE_ENV: $NODE_ENV"
         npm install --include=dev
+        if [ $? -ne 0 ]; then
+          echo "npm install failed!"
+          exit 1
+        fi
         echo "Installation complete. Checking for node_modules..."
         ls -la node_modules/ || echo "node_modules directory not found"
         if [ -d "node_modules/.bin" ]; then
@@ -68,10 +72,12 @@ jobs:
       working-directory: ./client
       run: |
         echo "Running client tests..."
-        echo "Trying npx vitest directly..."
-        npx vitest run --reporter=basic
+        echo "Checking locally installed vitest..."
+        npm list vitest || echo "vitest not found in package"
+        echo "Using local vitest binary..."
+        ./node_modules/.bin/vitest run --reporter=basic
         echo "Client tests passed, now running with coverage..."
-        npx vitest run --coverage
+        ./node_modules/.bin/vitest run --coverage
     
     - name: Run Server Tests
       working-directory: ./server
