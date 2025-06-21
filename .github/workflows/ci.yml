@@ -39,17 +39,14 @@ jobs:
         ls -la
         echo "Package.json contents:"
         cat package.json
-        echo "Trying to create package-lock.json if it doesn't exist..."
-        if [ ! -f "package-lock.json" ]; then
-          echo "No package-lock.json found, running npm install to create one..."
-          npm install --package-lock-only
-        fi
-        echo "Running npm ci to install from lock file..."
-        if [ -f "package-lock.json" ]; then
-          npm ci --include=dev
-        else
-          echo "Still no package-lock.json, using npm install..."
-          npm install --include=dev --verbose
+        echo "Force installing all dependencies..."
+        rm -rf node_modules package-lock.json 2>/dev/null || true
+        npm install --include=dev --verbose
+        echo "Verifying vitest installation..."
+        npm list vitest || echo "vitest still not listed"
+        if [ ! -f "node_modules/.bin/vitest" ]; then
+          echo "Manual vitest installation..."
+          npm install vitest@1.2.2 @vitest/coverage-v8@1.2.2 jsdom@24.0.0 --save-dev
         fi
         if [ $? -ne 0 ]; then
           echo "npm install failed!"
@@ -97,12 +94,16 @@ jobs:
           echo "ERROR: vitest binary not found at ./node_modules/.bin/vitest"
           echo "Available binaries:"
           ls -la node_modules/.bin/ || echo "No .bin directory"
-          echo "Trying to install vitest globally and run tests..."
-          npm install -g vitest@1.2.2
-          echo "Running tests with global vitest..."
-          vitest run --reporter=basic
-          echo "Running coverage with global vitest..."
-          vitest run --coverage
+          echo "Trying manual installation and execution..."
+          npm install vitest@1.2.2 @vitest/coverage-v8@1.2.2 jsdom@24.0.0
+          if [ -f "./node_modules/.bin/vitest" ]; then
+            echo "Manual installation successful, running tests..."
+            ./node_modules/.bin/vitest run --reporter=basic
+            ./node_modules/.bin/vitest run --coverage
+          else
+            echo "All methods failed, running basic test command..."
+            npx vitest@1.2.2 run --reporter=basic --config=/dev/null src/**/*.test.js
+          fi
         fi
     
     - name: Run Server Tests
