@@ -119,11 +119,12 @@ app.post('/api/chat',
       });
     }
 
-    const { message } = req.body;
+    const { message, conversationHistory = [] } = req.body;
 
-    // Build the messages array
+    // Build the messages array with conversation history
     const messages = [
       systemMessage,
+      ...conversationHistory,
       { role: "user", content: message }
     ];
 
