@@ -229,7 +229,7 @@ jobs:
       run: |
         curl -fsSL https://railway.app/install.sh | sh
         export PATH=$PATH:$HOME/.railway/bin
-        railway deploy --service server
+        railway deploy
       env:
         RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
     
@@ -281,7 +281,7 @@ jobs:
       run: |
         curl -fsSL https://railway.app/install.sh | sh
         export PATH=$PATH:$HOME/.railway/bin
-        railway deploy --service server --environment staging
+        railway deploy
       env:
         RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
     
