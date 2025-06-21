@@ -13,7 +13,7 @@ export const useChatStore = defineStore('chat', {
   }),
 
   getters: {
-    // Get messages formatted for display
+    // Get messages formatted for display  
     displayMessages: (state) => state.messages,
     
     // Get conversation context for API calls (excludes initial welcome message)
