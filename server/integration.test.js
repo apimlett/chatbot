@@ -87,8 +87,8 @@ describe('Server Integration Tests', () => {
     it('should enforce rate limiting across multiple IPs', async () => {
       const requests = [];
       
-      // Simulate requests from same IP (should be rate limited)
-      for (let i = 0; i < 10; i++) {
+      // Simulate requests from same IP (should be rate limited) - exceed 50 per second
+      for (let i = 0; i < 60; i++) {
         requests.push(
           request(app)
             .post('/api/chat')

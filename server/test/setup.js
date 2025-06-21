@@ -3,9 +3,9 @@ process.env.NODE_ENV = 'test';
 process.env.OPENAI_API_KEY = 'test-api-key';
 process.env.ALLOWED_ORIGINS = 'http://localhost:3000,http://localhost:5173';
 
-// Set more aggressive rate limits for testing
+// Set reasonable rate limits for testing (more permissive for most tests)
 process.env.RATE_LIMIT_WINDOW_MS = '1000';  // 1 second window
-process.env.RATE_LIMIT_MAX = '2';           // 2 requests per window
+process.env.RATE_LIMIT_MAX = '50';          // 50 requests per window (more permissive)
 
 // Mock OpenAI for tests
 jest.mock('openai', () => {

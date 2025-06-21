@@ -70,8 +70,8 @@ app.use(express.json({ limit: '10mb' }));
 
 // Rate limiting
 const chatLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes default
+  max: parseInt(process.env.RATE_LIMIT_MAX) || 100, // 100 requests per windowMs default
   message: { error: 'Too many chat requests, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false
@@ -104,9 +104,21 @@ app.post('/api/chat',
   chatLimiter,
   [
     body('message')
+      .custom((value) => {
+        if (typeof value !== 'string') {
+          throw new Error('Message must be a string');
+        }
+        return true;
+      })
       .isLength({ min: 1, max: 2000 })
       .withMessage('Message must be between 1 and 2000 characters')
       .trim()
+      .custom((value) => {
+        if (!value || value.length === 0) {
+          throw new Error('Message cannot be empty or whitespace only');
+        }
+        return true;
+      })
   ],
   async (req, res) => {
   try {
@@ -115,7 +127,8 @@ app.post('/api/chat',
     if (!errors.isEmpty()) {
       return res.status(400).json({ 
         error: 'Invalid input',
-        details: errors.array().map(err => err.msg)
+        details: errors.array().map(err => err.msg),
+        errors: errors.array()
       });
     }
 
@@ -133,6 +146,11 @@ app.post('/api/chat',
       messages: messages,
       temperature: 0.7,
     });
+
+    // Validate OpenAI response structure
+    if (!completion.choices || completion.choices.length === 0) {
+      throw new Error('Invalid response from OpenAI API');
+    }
 
     const response = completion.choices[0].message.content;
 

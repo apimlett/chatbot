@@ -57,7 +57,7 @@ describe('API Endpoint Tests', () => {
       });
 
       it('should handle maximum length messages', async () => {
-        const maxMessage = 'A'.repeat(10000); // Maximum allowed length
+        const maxMessage = 'A'.repeat(2000); // Maximum allowed length
         
         const response = await request(app)
           .post('/api/chat')
@@ -192,8 +192,8 @@ describe('API Endpoint Tests', () => {
 
     describe('Rate Limiting', () => {
       it('should return 429 when rate limit exceeded', async () => {
-        // Make many requests quickly to trigger rate limiting
-        const requests = Array(20).fill().map(() =>
+        // Make many requests quickly to trigger rate limiting (exceed 50 per second)
+        const requests = Array(60).fill().map(() =>
           request(app)
             .post('/api/chat')
             .send({ message: 'Rate limit test' })
@@ -220,8 +220,8 @@ describe('API Endpoint Tests', () => {
           .send({ message: 'Rate limit header test' });
         
         // Should have rate limiting headers (whether limited or not)
-        expect(response.headers).toHaveProperty('x-ratelimit-limit');
-        expect(response.headers).toHaveProperty('x-ratelimit-remaining');
+        expect(response.headers).toHaveProperty('ratelimit-limit');
+        expect(response.headers).toHaveProperty('ratelimit-remaining');
       });
     });
 

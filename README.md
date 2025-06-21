@@ -1,5 +1,12 @@
 # Cogfusion.ai
 
+[![CI/CD Pipeline](https://github.com/andypimlett/chatbot/workflows/CI/CD%20Pipeline/badge.svg)](https://github.com/andypimlett/chatbot/actions)
+[![codecov](https://codecov.io/gh/andypimlett/chatbot/branch/main/graph/badge.svg)](https://codecov.io/gh/andypimlett/chatbot)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Security](https://img.shields.io/badge/security-audited-green.svg)](https://github.com/andypimlett/chatbot/security)
+[![Quality Gate](https://img.shields.io/badge/quality%20gate-7%20gates-brightgreen.svg)](#quality-gates--deployment)
+
 An advanced AI assistant designed for cognitive fusion of ideas and problem-solving, with comprehensive testing, security, and CI/CD pipeline.
 
 ## Technology Stack
