@@ -26,20 +26,26 @@ jobs:
       run: |
         cd client
         npm install
+        npm list --depth=0
     
     - name: Install Server Dependencies
       run: |
         cd server
         npm ci
+        npm list --depth=0
     
     - name: Run Client Tests
       run: |
         cd client
+        which npm
+        npm --version
         npm run test:coverage
     
     - name: Run Server Tests
       run: |
         cd server
+        which npm
+        npm --version
         npm run test:coverage
     
     
@@ -65,7 +71,7 @@ jobs:
     - name: Install Dependencies
       run: |
         cd client && npm install
-        cd ../server && npm install
+        cd ../server && npm ci
     
     - name: Run Linting
       run: |
