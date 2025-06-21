@@ -232,7 +232,7 @@ describe('Server Integration Tests', () => {
         messages: [
           {
             role: 'system',
-            content: expect.stringContaining('Mandobot')
+            content: expect.stringContaining('Cogfusion.ai')
           },
           {
             role: 'user',

@@ -1,7 +1,7 @@
 {
-  "name": "langchain-chatbot-server",
+  "name": "cogfusion-ai-server",
   "version": "1.0.0",
-  "description": "Backend server for LangChain chatbot",
+  "description": "Backend server for Cogfusion.ai chatbot",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
