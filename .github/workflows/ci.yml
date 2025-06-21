@@ -37,11 +37,17 @@ jobs:
     - name: Run Client Tests
       working-directory: ./client
       run: |
+        echo "Running client tests..."
+        npm run test:pre-commit
+        echo "Client tests passed, now running with coverage..."
         npm run test:coverage
     
     - name: Run Server Tests
       working-directory: ./server
       run: |
+        echo "Running server tests..."
+        npm run test:pre-commit
+        echo "Server tests passed, now running with coverage..."
         npm run test:coverage
     
     
