@@ -7,9 +7,11 @@
     "NODE_ENV": "production"
   },
   "git": {
-    "deploymentEnabled": {
-      "main": true
-    }
+    "deploymentEnabled": false
   },
-  "ignoreCommand": "./should-build.sh"
+  "functions": {
+    "app.js": {
+      "runtime": "nodejs18.x"
+    }
+  }
 }

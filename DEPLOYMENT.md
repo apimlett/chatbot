@@ -1,6 +1,6 @@
-# Deployment Quality Gates
+# Deployment Guide
 
-This document outlines the mandatory quality gates that must pass before deployment to any environment.
+This project uses **GitHub Actions** to orchestrate deployments to Railway (server) and Vercel (client) with mandatory quality gates.
 
 ## Overview
 
@@ -105,22 +105,36 @@ npm run test:pre-commit
 
 ## CI/CD Integration
 
-### GitHub Actions
+### GitHub Actions Orchestration
 The `.github/workflows/ci.yml` pipeline automatically:
 1. Runs all quality gates on push/PR
-2. Blocks deployment if any gate fails
-3. Provides detailed failure reports
-4. Uploads coverage reports
+2. **Sequential deployment**: Server (Railway) → Client (Vercel)  
+3. Health checks and verification after each deployment
+4. Automatic rollback on failure
 
 ### Pipeline Stages
 ```yaml
 Jobs:
-  test        # Gates 3 & 4: Test execution and coverage
-  lint        # Code quality validation  
-  security    # Gate 2: Security audit
-  build       # Gate 5: Build validation
-  deploy-*    # Gates 1, 6, 7: Environment-specific deployment
+  test           # Gates 3 & 4: Test execution and coverage
+  lint           # Code quality validation  
+  security-scan  # Gate 2: Security audit
+  build          # Gate 5: Build validation
+  deploy-server  # Railway deployment with health check
+  deploy-client  # Vercel deployment (depends on server success)
 ```
+
+### Required GitHub Secrets
+Configure these in your repository settings:
+
+**Railway:**
+- `RAILWAY_TOKEN` - Railway API token
+- `RAILWAY_SERVER_URL` - Production server URL for health checks
+
+**Vercel:**  
+- `VERCEL_TOKEN` - Vercel API token
+- `VERCEL_ORG_ID` - Vercel organization ID
+- `VERCEL_PROJECT_ID` - Vercel project ID
+- `VERCEL_CLIENT_URL` - Production client URL for verification
 
 ### Branch Protection
 - **main**: All gates must pass + PR review required
