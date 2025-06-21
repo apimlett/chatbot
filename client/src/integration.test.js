@@ -11,7 +11,7 @@ describe('Chat Application Integration Tests', () => {
     expect(screen.getByText("Hello! I'm FitBot. How can I help you today?")).toBeTruthy()
     
     const input = screen.getAllByPlaceholderText('Type a message...')[0]
-    const button = screen.getByRole('button', { name: 'Send' })
+    const button = screen.getAllByRole('button', { name: 'Send' })[0]
     
     // Step 1: User types first message
     await fireEvent.update(input, 'What exercises should I do?')
@@ -66,7 +66,7 @@ describe('Chat Application Integration Tests', () => {
     render(App)
     
     const input = screen.getAllByPlaceholderText('Type a message...')[0]
-    const button = screen.getByRole('button', { name: 'Send' })
+    const button = screen.getAllByRole('button', { name: 'Send' })[0]
     
     // Send multiple messages in quick succession
     const messages = ['Message 1', 'Message 2', 'Message 3']
@@ -98,7 +98,7 @@ describe('Chat Application Integration Tests', () => {
     render(App)
     
     const input = screen.getAllByPlaceholderText('Type a message...')[0]
-    const button = screen.getByRole('button', { name: 'Send' })
+    const button = screen.getAllByRole('button', { name: 'Send' })[0]
     
     // First successful message
     await fireEvent.update(input, 'Working message')
@@ -124,7 +124,7 @@ describe('Chat Application Integration Tests', () => {
     expect(wrapper.container.firstChild.style.height).toBe('800px')
     
     const input = screen.getAllByPlaceholderText('Type a message...')[0]
-    const button = screen.getByRole('button', { name: 'Send' })
+    const button = screen.getAllByRole('button', { name: 'Send' })[0]
     
     // Start a conversation
     await fireEvent.update(input, 'Test viewport')
@@ -166,7 +166,7 @@ describe('Chat Application Integration Tests', () => {
     render(App)
     
     const input = screen.getAllByPlaceholderText('Type a message...')[0]
-    const button = screen.getByRole('button', { name: 'Send' })
+    const button = screen.getAllByRole('button', { name: 'Send' })[0]
     
     // Send multiple messages to test performance
     const messageCount = 10
@@ -196,7 +196,7 @@ describe('Chat Application Integration Tests', () => {
     render(App)
     
     const input = screen.getAllByPlaceholderText('Type a message...')[0]
-    const button = screen.getByRole('button', { name: 'Send' })
+    const button = screen.getAllByRole('button', { name: 'Send' })[0]
     
     // Check ARIA attributes and roles
     expect(input).toBeTruthy()
