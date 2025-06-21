@@ -35,24 +35,29 @@ jobs:
       run: |
         echo "Installing client dependencies..."
         echo "NODE_ENV: $NODE_ENV"
-        npm install --include=dev
+        echo "Contents before install:"
+        ls -la
+        echo "Package.json contents:"
+        cat package.json
+        echo "Running npm install with verbose output..."
+        npm install --include=dev --verbose
         if [ $? -ne 0 ]; then
           echo "npm install failed!"
           exit 1
         fi
-        echo "Installation complete. Checking for node_modules..."
-        ls -la node_modules/ || echo "node_modules directory not found"
+        echo "Installation complete. Checking installed packages..."
+        npm list --depth=0 || echo "npm list failed"
+        echo "Checking for vitest specifically..."
+        npm list vitest || echo "vitest not found"
+        echo "Checking node_modules structure..."
+        ls -la node_modules/ | head -20 || echo "node_modules directory not found"
+        echo "Checking for .bin directory..."
         if [ -d "node_modules/.bin" ]; then
-          echo "Found .bin directory:"
-          ls -la node_modules/.bin/ | head -10
-          echo "Looking for vitest..."
-          ls -la node_modules/.bin/ | grep vitest || echo "vitest not found in .bin"
+          echo "Found .bin directory with $(ls node_modules/.bin/ | wc -l) files:"
+          ls -la node_modules/.bin/ | head -20
         else
           echo ".bin directory does not exist"
         fi
-        echo "Checking if vitest is available..."
-        which vitest || echo "vitest not in PATH"
-        npx vitest --version || echo "npx vitest failed"
     
     - name: Install Server Dependencies  
       working-directory: ./server
@@ -72,12 +77,20 @@ jobs:
       working-directory: ./client
       run: |
         echo "Running client tests..."
-        echo "Checking locally installed vitest..."
-        npm list vitest || echo "vitest not found in package"
-        echo "Using local vitest binary..."
-        ./node_modules/.bin/vitest run --reporter=basic
-        echo "Client tests passed, now running with coverage..."
-        ./node_modules/.bin/vitest run --coverage
+        echo "Checking if vitest binary exists..."
+        if [ -f "./node_modules/.bin/vitest" ]; then
+          echo "Found vitest binary, running tests..."
+          ./node_modules/.bin/vitest run --reporter=basic
+          echo "Client tests passed, now running with coverage..."
+          ./node_modules/.bin/vitest run --coverage
+        else
+          echo "ERROR: vitest binary not found at ./node_modules/.bin/vitest"
+          echo "Available binaries:"
+          ls -la node_modules/.bin/ || echo "No .bin directory"
+          echo "Trying npm run instead..."
+          npm run test:pre-commit
+          npm run test:coverage
+        fi
     
     - name: Run Server Tests
       working-directory: ./server
