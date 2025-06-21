@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col h-screen-safe w-full bg-white font-sans">
+  <div class="flex flex-col w-full bg-white font-sans" :style="{ height: viewportHeight + 'px' }">
     <div class="flex-shrink-0 p-4 bg-gray-50 border-b border-gray-200 text-center">
       <h1 class="text-xl font-medium text-gray-800 m-0">FitBot</h1>
     </div>
@@ -22,7 +22,7 @@
         </div>
       </div>
     </div>
-    <div class="flex-shrink-0 flex p-4 border-t border-gray-200 bg-gray-50 pb-safe">
+    <div class="flex-shrink-0 flex p-4 border-t border-gray-200 bg-gray-50">
       <input 
         v-model="newMessage" 
         @keyup.enter="sendMessage" 
@@ -57,6 +57,7 @@ export default {
       ],
       newMessage: '',
       isLoading: false,
+      viewportHeight: window.innerHeight,
     }
   },
   methods: {
@@ -100,10 +101,25 @@ export default {
           list.scrollTop = list.scrollHeight;
         }
       });
+    },
+    updateViewportHeight() {
+      this.viewportHeight = window.innerHeight;
     }
   },
   mounted() {
     this.scrollToBottom();
+    // Update viewport height when window resizes (address bar shows/hides)
+    window.addEventListener('resize', this.updateViewportHeight);
+    window.addEventListener('orientationchange', this.updateViewportHeight);
+    
+    // Initial timeout to get correct height after page load
+    setTimeout(() => {
+      this.updateViewportHeight();
+    }, 100);
+  },
+  beforeUnmount() {
+    window.removeEventListener('resize', this.updateViewportHeight);
+    window.removeEventListener('orientationchange', this.updateViewportHeight);
   }
 }
 </script>

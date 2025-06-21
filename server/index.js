@@ -41,11 +41,26 @@ app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl)
     if (!origin) return callback(null, true);
+    
+    // Check explicit allowed origins first
     if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
+      return callback(null, true);
     }
+    
+    // TODO: Remove these wildcard domains before production deployment
+    // These are only for development/testing with dynamic preview URLs
+    
+    // Allow all Vercel deployment domains (REMOVE IN PRODUCTION)
+    if (origin && origin.includes('.vercel.app')) {
+      return callback(null, true);
+    }
+    
+    // Allow all Railway deployment domains (REMOVE IN PRODUCTION)
+    if (origin && origin.includes('.railway.app')) {
+      return callback(null, true);
+    }
+    
+    callback(new Error('Not allowed by CORS'));
   },
   credentials: true
 }));
