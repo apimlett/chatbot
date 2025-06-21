@@ -39,8 +39,18 @@ jobs:
         ls -la
         echo "Package.json contents:"
         cat package.json
-        echo "Running npm install with verbose output..."
-        npm install --include=dev --verbose
+        echo "Trying to create package-lock.json if it doesn't exist..."
+        if [ ! -f "package-lock.json" ]; then
+          echo "No package-lock.json found, running npm install to create one..."
+          npm install --package-lock-only
+        fi
+        echo "Running npm ci to install from lock file..."
+        if [ -f "package-lock.json" ]; then
+          npm ci --include=dev
+        else
+          echo "Still no package-lock.json, using npm install..."
+          npm install --include=dev --verbose
+        fi
         if [ $? -ne 0 ]; then
           echo "npm install failed!"
           exit 1
@@ -87,9 +97,12 @@ jobs:
           echo "ERROR: vitest binary not found at ./node_modules/.bin/vitest"
           echo "Available binaries:"
           ls -la node_modules/.bin/ || echo "No .bin directory"
-          echo "Trying npm run instead..."
-          npm run test:pre-commit
-          npm run test:coverage
+          echo "Trying to install vitest globally and run tests..."
+          npm install -g vitest@1.2.2
+          echo "Running tests with global vitest..."
+          vitest run --reporter=basic
+          echo "Running coverage with global vitest..."
+          vitest run --coverage
         fi
     
     - name: Run Server Tests
