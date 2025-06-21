@@ -21,7 +21,6 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
-        cache: 'npm'
     
     - name: Install Client Dependencies
       run: |
@@ -73,7 +72,6 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: 20.x
-        cache: 'npm'
     
     - name: Install Dependencies
       run: |
@@ -95,7 +93,6 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: 20.x
-        cache: 'npm'
     
     - name: Install Client Dependencies
       run: |
@@ -124,8 +121,6 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: 20.x
-        cache: 'npm'
-        cache-dependency-path: client/package-lock.json
     
     - name: Install Client Dependencies
       run: |
