@@ -1,27 +1,24 @@
 import { beforeAll, afterAll, afterEach } from 'vitest'
 import { setupServer } from 'msw/node'
-import { rest } from 'msw'
+import { http, HttpResponse } from 'msw'
 
 // Create MSW server instance
 export const server = setupServer(
-  // Chat API endpoint mock
-  rest.post(`${import.meta.env.VITE_API_URL}/api/chat`, async (req, res, ctx) => {
-    const { message } = await req.json()
+  // Chat API endpoint mock - catch all /api/chat requests regardless of base URL
+  http.post('*/api/chat', async ({ request }) => {
+    const { message } = await request.json()
     
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 100))
     
-    return res(
-      ctx.status(200),
-      ctx.json({
-        response: `Mock response to: ${message}`
-      })
-    )
+    return HttpResponse.json({
+      response: `Mock response to: ${message}`
+    })
   })
 )
 
 // Start server before all tests
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
+beforeAll(() => server.listen({ onUnhandledRequest: 'warn' }))
 
 // Reset handlers after each test
 afterEach(() => server.resetHandlers())

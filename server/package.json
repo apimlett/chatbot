@@ -6,8 +6,14 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "build": "echo 'No build step required'",
-    "postinstall": "echo 'Post-install complete'"
+    "build": "npm run test:pre-deploy && echo 'Server build completed'",
+    "postinstall": "echo 'Post-install complete'",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:pre-commit": "jest --passWithNoTests --silent",
+    "test:pre-deploy": "jest --coverage --coverageThreshold='{\"global\":{\"branches\":75,\"functions\":75,\"lines\":75,\"statements\":75}}'",
+    "lint": "echo 'No linter configured yet'"
   },
   "dependencies": {
     "cors": "^2.8.5",
@@ -19,7 +25,10 @@
     "openai": "^4.20.1"
   },
   "devDependencies": {
-    "nodemon": "^3.0.3"
+    "@types/jest": "^30.0.0",
+    "jest": "^30.0.2",
+    "nodemon": "^3.0.3",
+    "supertest": "^7.1.1"
   },
   "engines": {
     "node": ">=18.0.0"

@@ -1,0 +1,10 @@
+[build]
+cmd = "npm run build"
+
+[deploy]
+healthcheckPath = "/api/health"
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
+
+[env]
+NODE_ENV = "production"

@@ -1,0 +1,155 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: |
+          client/package-lock.json
+          server/package-lock.json
+    
+    - name: Install Client Dependencies
+      run: |
+        cd client
+        npm ci
+    
+    - name: Install Server Dependencies
+      run: |
+        cd server
+        npm ci
+    
+    - name: Run Client Tests
+      run: |
+        cd client
+        npm run test:coverage
+    
+    - name: Run Server Tests
+      run: |
+        cd server
+        npm run test:coverage
+    
+    - name: Check Test Coverage Thresholds
+      run: |
+        echo "Verifying coverage meets minimum thresholds..."
+        # Client coverage check (85% minimum)
+        cd client
+        npm run test:coverage -- --reporter=json --outputFile=coverage.json
+        # Add coverage threshold validation here
+        
+        # Server coverage check (80% minimum)
+        cd ../server
+        npm run test:coverage -- --coverage --coverageThreshold='{"global":{"branches":80,"functions":80,"lines":80,"statements":80}}'
+    
+    - name: Upload Coverage Reports
+      uses: codecov/codecov-action@v3
+      with:
+        directory: ./coverage
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: true
+
+  lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js 20.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20.x
+        cache: 'npm'
+        cache-dependency-path: |
+          client/package-lock.json
+          server/package-lock.json
+    
+    - name: Install Dependencies
+      run: |
+        cd client && npm ci
+        cd ../server && npm ci
+    
+    - name: Run Linting
+      run: |
+        cd client && npm run lint --if-present
+        cd ../server && npm run lint --if-present
+
+  security-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Run Security Audit
+      run: |
+        cd client && npm audit --audit-level=high
+        cd ../server && npm audit --audit-level=high
+
+  build:
+    needs: [test, lint, security-scan]
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js 20.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20.x
+        cache: 'npm'
+        cache-dependency-path: client/package-lock.json
+    
+    - name: Install Client Dependencies
+      run: |
+        cd client
+        npm ci
+    
+    - name: Build Client
+      run: |
+        cd client
+        npm run build
+    
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: client-build
+        path: client/dist/
+
+  deploy-staging:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    
+    steps:
+    - name: Deploy to Staging
+      run: |
+        echo "Deploying to staging environment..."
+        # Add your staging deployment commands here
+
+  deploy-production:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Deploy to Production
+      run: |
+        echo "Deploying to production environment..."
+        # Add your production deployment commands here

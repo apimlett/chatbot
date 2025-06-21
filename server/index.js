@@ -150,11 +150,16 @@ app.post('/api/chat',
   }
 });
 
-// Start server
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
-  console.log(`Node version: ${process.version}`);
-  console.log(`Environment: ${process.env.NODE_ENV}`);
-  console.log(`Port: ${port}`);
-  console.log(`OpenAI API Key configured: ${process.env.OPENAI_API_KEY ? 'Yes' : 'No'}`);
-});
+// Start server only if not in test environment
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(port, () => {
+    console.log(`Server running on http://localhost:${port}`);
+    console.log(`Node version: ${process.version}`);
+    console.log(`Environment: ${process.env.NODE_ENV}`);
+    console.log(`Port: ${port}`);
+    console.log(`OpenAI API Key configured: ${process.env.OPENAI_API_KEY ? 'Yes' : 'No'}`);
+  });
+}
+
+// Export app for testing
+module.exports = app;

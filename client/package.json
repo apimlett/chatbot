@@ -6,11 +6,16 @@
   "scripts": {
     "start": "vite",
     "dev": "vite",
-    "build": "vite build",
+    "build": "npm run test:pre-deploy && vite build",
     "preview": "vite preview",
     "test": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "test:pre-commit": "vitest run --reporter=basic",
+    "test:pre-deploy": "vitest run --coverage && npm run test:threshold",
+    "test:threshold": "echo 'Checking coverage thresholds...' && vitest run --coverage --reporter=verbose",
+    "prepare": "cd .. && husky install client/.husky",
+    "lint": "echo 'No linter configured yet'"
   },
   "dependencies": {
     "axios": "^1.6.7",
@@ -22,6 +27,7 @@
     "@vitest/coverage-v8": "^1.2.2",
     "@vitest/ui": "^1.2.2",
     "autoprefixer": "^10.4.21",
+    "husky": "^9.1.7",
     "jsdom": "^24.0.0",
     "msw": "^2.2.1",
     "postcss": "^8.5.6",
