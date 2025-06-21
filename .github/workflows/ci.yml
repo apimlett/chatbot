@@ -101,11 +101,13 @@ jobs:
     
     - name: Run Client Security Audit
       working-directory: ./client
-      run: npm audit --audit-level=high || echo "Client audit: no high/critical vulnerabilities"
+      run: |
+        npm audit --audit-level=high || echo "Client audit: no high/critical vulnerabilities"
       
     - name: Run Server Security Audit  
       working-directory: ./server
-      run: npm audit --audit-level=high || echo "Server audit: no high/critical vulnerabilities"
+      run: |
+        npm audit --audit-level=high || echo "Server audit: no high/critical vulnerabilities"
 
   build:
     needs: [test, lint, security-scan]
