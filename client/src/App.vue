@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col h-screen w-full bg-white font-sans">
+  <div class="flex flex-col h-screen-safe w-full bg-white font-sans">
     <div class="flex-shrink-0 p-4 bg-gray-50 border-b border-gray-200 text-center">
       <h1 class="text-xl font-medium text-gray-800 m-0">FitBot</h1>
     </div>
@@ -22,7 +22,7 @@
         </div>
       </div>
     </div>
-    <div class="flex-shrink-0 flex p-4 border-t border-gray-200 bg-gray-50">
+    <div class="flex-shrink-0 flex p-4 border-t border-gray-200 bg-gray-50 pb-safe">
       <input 
         v-model="newMessage" 
         @keyup.enter="sendMessage" 
