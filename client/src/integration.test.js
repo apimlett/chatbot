@@ -12,7 +12,7 @@ describe('Chat Application Integration Tests', () => {
     render(App)
     
     // Initial state: welcome message should be visible
-    expect(screen.getByText("Hello! I'm FitBot. How can I help you today?")).toBeTruthy()
+    expect(screen.getByText("Hello! I'm Cogfusion.ai. How can I help you today?")).toBeTruthy()
     
     const input = screen.getAllByPlaceholderText('Type a message...')[0]
     const button = screen.getAllByRole('button', { name: 'Send' })[0]

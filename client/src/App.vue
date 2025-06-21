@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col w-full bg-white font-sans" :style="{ height: viewportHeight + 'px' }">
     <div class="flex-shrink-0 p-4 bg-gray-50 border-b border-gray-200 text-center">
-      <h1 class="text-xl font-medium text-gray-800 m-0">FitBot</h1>
+      <h1 class="text-xl font-medium text-gray-800 m-0">Cogfusion.ai</h1>
     </div>
     <div class="flex-1 overflow-y-auto p-4" ref="messageList">
       <div v-for="message in messages" :key="message.id" class="mb-4 flex" :class="message.type === 'sent' ? 'justify-end' : 'justify-start'">
@@ -53,7 +53,7 @@ export default {
   data() {
     return {
       messages: [
-        { id: 1, text: "Hello! I'm FitBot. How can I help you today?", type: 'received' }
+        { id: 1, text: "Hello! I'm Cogfusion.ai. How can I help you today?", type: 'received' }
       ],
       newMessage: '',
       isLoading: false,

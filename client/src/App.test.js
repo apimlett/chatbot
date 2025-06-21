@@ -241,7 +241,7 @@ describe('App.vue', () => {
   it('displays initial welcome message', () => {
     render(App)
     
-    expect(screen.getByText("Hello! I'm FitBot. How can I help you today?")).toBeTruthy()
+    expect(screen.getByText("Hello! I'm Cogfusion.ai. How can I help you today?")).toBeTruthy()
   })
 
   it('handles network timeout errors', async () => {
