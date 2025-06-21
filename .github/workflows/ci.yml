@@ -34,15 +34,21 @@ jobs:
       working-directory: ./client
       run: |
         echo "Installing client dependencies..."
-        npm install
+        echo "NODE_ENV: $NODE_ENV"
+        npm install --include=dev
         echo "Installation complete. Checking for node_modules..."
         ls -la node_modules/ || echo "node_modules directory not found"
         if [ -d "node_modules/.bin" ]; then
           echo "Found .bin directory:"
-          ls -la node_modules/.bin/
+          ls -la node_modules/.bin/ | head -10
+          echo "Looking for vitest..."
+          ls -la node_modules/.bin/ | grep vitest || echo "vitest not found in .bin"
         else
           echo ".bin directory does not exist"
         fi
+        echo "Checking if vitest is available..."
+        which vitest || echo "vitest not in PATH"
+        npx vitest --version || echo "npx vitest failed"
     
     - name: Install Server Dependencies  
       working-directory: ./server
@@ -62,9 +68,10 @@ jobs:
       working-directory: ./client
       run: |
         echo "Running client tests..."
-        npm run test:pre-commit
+        echo "Trying npx vitest directly..."
+        npx vitest run --reporter=basic
         echo "Client tests passed, now running with coverage..."
-        npm run test:coverage
+        npx vitest run --coverage
     
     - name: Run Server Tests
       working-directory: ./server
