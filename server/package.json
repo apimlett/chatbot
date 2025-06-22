@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "build": "npm run test:pre-deploy && echo 'Server build completed'",
+    "build": "npm test && echo 'Server build completed'",
     "postinstall": "echo 'Post-install complete'",
     "test": "jest",
     "test:watch": "jest --watch",
