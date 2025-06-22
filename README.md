@@ -1,11 +1,13 @@
 # Cogfusion.ai
 
-[![CI/CD Pipeline](https://github.com/andypimlett/chatbot/actions/workflows/ci.yml/badge.svg)](https://github.com/andypimlett/chatbot/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/andypimlett/chatbot/branch/main/graph/badge.svg)](https://codecov.io/gh/andypimlett/chatbot)
-[![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
-[![Railway Deploy](https://railway.app/button.svg)](https://railway.app/new/template?template=https%3A%2F%2Fgithub.com%2Fapimlett%2Fchatbot)
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fapimlett%2Fchatbot)
-[![Quality Gate](https://img.shields.io/badge/quality%20gate-7%20gates-brightgreen.svg)](#deployment-guide)
+<div align="center">
+
+| Build & Quality | Coverage | Runtime | Deployment |
+|:---:|:---:|:---:|:---:|
+| [![CI/CD Pipeline](https://github.com/apimlett/chatbot/actions/workflows/ci.yml/badge.svg)](https://github.com/apimlett/chatbot/actions/workflows/ci.yml) | [![codecov](https://codecov.io/gh/apimlett/chatbot/branch/main/graph/badge.svg)](https://codecov.io/gh/apimlett/chatbot) | [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/) | [![Railway Deploy](https://railway.app/button.svg)](https://railway.app/new/template?template=https%3A%2F%2Fgithub.com%2Fapimlett%2Fchatbot) |
+| [![Quality Gate](https://img.shields.io/badge/quality%20gate-7%20gates-brightgreen.svg)](#deployment-guide) | [![Security](https://img.shields.io/badge/security-audited-brightgreen.svg)](#security) | [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) | [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fapimlett%2Fchatbot) |
+
+</div>
 
 An advanced AI assistant designed for cognitive fusion of ideas and problem-solving, with comprehensive testing, security, and CI/CD pipeline.
 
