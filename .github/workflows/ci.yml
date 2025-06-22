@@ -252,7 +252,7 @@ jobs:
     - name: Replace server with built version
       run: |
         rm -rf ./server/node_modules || true
-        cp -r ./server-built/server/* ./server/
+        cp -r ./server-built/* ./server/
     
     - name: Deploy to Railway
       working-directory: ./server
