@@ -263,6 +263,9 @@ jobs:
     
     - name: Verify Server Health
       run: |
+        # Install curl in Railway CLI container
+        apk add --no-cache curl
+        
         # Test server health endpoint with retries
         SERVER_URL="${{ secrets.RAILWAY_SERVER_URL }}"
         if [ -n "$SERVER_URL" ]; then
