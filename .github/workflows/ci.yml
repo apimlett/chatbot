@@ -234,26 +234,29 @@ jobs:
   deploy-server:
     needs: [build]
     runs-on: ubuntu-latest
+    container: ghcr.io/railwayapp/cli:latest
     if: github.ref == 'refs/heads/main'
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
     
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
     - name: Download Server Deployment Artifacts
       uses: actions/download-artifact@v4
       with:
         name: server-deploy
-        path: ./
+        path: ./server-built/
     
-    - name: Install Railway CLI
+    - name: Replace server with built version
       run: |
-        curl -fsSL https://railway.app/install.sh | sh
-        echo "$HOME/.railway/bin" >> $GITHUB_PATH
+        rm -rf ./server/node_modules || true
+        cp -r ./server-built/server/* ./server/
     
     - name: Deploy to Railway
       working-directory: ./server
-      env:
-        RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        CI: true
-      run: railway up --service=${{ secrets.RAILWAY_SERVICE_ID }} --detach
+      run: railway up --service=${{ secrets.RAILWAY_SERVICE_ID }}
     
     - name: Wait for Server Deployment
       run: sleep 60  # Give server more time to fully deploy
