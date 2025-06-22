@@ -269,6 +269,8 @@ jobs:
         # Test server health endpoint with retries
         SERVER_URL="${{ secrets.RAILWAY_SERVER_URL }}"
         if [ -n "$SERVER_URL" ]; then
+          # Remove trailing slash from SERVER_URL if present
+          SERVER_URL="${SERVER_URL%/}"
           echo "Testing health endpoint: $SERVER_URL/api/health"
           
           # Retry health check up to 5 times with 10 second intervals
