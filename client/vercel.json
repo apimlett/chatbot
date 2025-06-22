@@ -8,10 +8,5 @@
   },
   "git": {
     "deploymentEnabled": false
-  },
-  "functions": {
-    "app.js": {
-      "runtime": "nodejs18.x"
-    }
   }
 }
