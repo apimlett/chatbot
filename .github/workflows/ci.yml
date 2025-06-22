@@ -319,24 +319,14 @@ jobs:
     - name: Deploy Client to Vercel
       env:
         VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-        VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
       working-directory: ./client
       run: |
         # Set environment variable for API URL
         echo "VITE_API_URL=${{ secrets.RAILWAY_SERVER_URL }}" > .env.production
         
-        # Deploy to Vercel - will create project if it doesn't exist
+        # Deploy to Vercel without project linking
         echo "Deploying to Vercel..."
-        if [ -n "$VERCEL_ORG_ID" ] && [ -n "$VERCEL_PROJECT_ID" ]; then
-          echo "Attempting to link to existing project..."
-          vercel link --yes --token=$VERCEL_TOKEN --scope=$VERCEL_ORG_ID --project=$VERCEL_PROJECT_ID || {
-            echo "Project not found, will create new one during deployment"
-          }
-        fi
-        
-        # Deploy (will create project if needed)
-        vercel deploy --prod --token=$VERCEL_TOKEN --yes
+        vercel deploy --prod --token=$VERCEL_TOKEN --yes --name=cogfusion-ai-client
     
     - name: Verify Client Deployment
       run: |
