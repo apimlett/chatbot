@@ -106,6 +106,12 @@ VITE_API_URL=https://your-server.railway.app
 └── CLAUDE.md              # This file
 ```
 
+### Documentation
+It's important to ensure we review and update README, CLAUDE and CHANGELOG as we add new features.
+
+### Design to Code
+Figma MCP allows direct integration with design.  All designs should be implemented using appropriate Tailwind styles.
+
 ### Recent Commits
 - Fixed Vercel deployment error handling
 - Updated deployment badges in README
