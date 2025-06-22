@@ -1,10 +1,10 @@
 # Cogfusion.ai
 
-[![CI/CD Pipeline](https://github.com/andypimlett/chatbot/workflows/CI/CD%20Pipeline/badge.svg)](https://github.com/andypimlett/chatbot/actions)
+[![CI/CD Pipeline](https://github.com/andypimlett/chatbot/actions/workflows/ci.yml/badge.svg)](https://github.com/andypimlett/chatbot/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/andypimlett/chatbot/branch/main/graph/badge.svg)](https://codecov.io/gh/andypimlett/chatbot)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
-[![Railway Deploy](https://img.shields.io/badge/railway-deployed-brightgreen.svg)](https://railway.app)
-[![Vercel Deploy](https://img.shields.io/badge/vercel-deployed-black.svg)](https://vercel.com)
+[![Railway Deploy](https://railway.app/button.svg)](https://railway.app/new/template?template=https%3A%2F%2Fgithub.com%2Fapimlett%2Fchatbot)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fapimlett%2Fchatbot)
 [![Quality Gate](https://img.shields.io/badge/quality%20gate-7%20gates-brightgreen.svg)](#deployment-guide)
 
 An advanced AI assistant designed for cognitive fusion of ideas and problem-solving, with comprehensive testing, security, and CI/CD pipeline.
