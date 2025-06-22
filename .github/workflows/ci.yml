@@ -211,47 +211,90 @@ jobs:
       working-directory: ./client
       run: npm run build
     
-    - name: Upload Build Artifacts
+    - name: Install Server Production Dependencies
+      working-directory: ./server
+      run: npm ci --production
+    
+    - name: Upload Client Build Artifacts
       uses: actions/upload-artifact@v4
       with:
         name: client-build
         path: client/dist/
+    
+    - name: Upload Server Deployment Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: server-deploy
+        path: |
+          server/
+          !server/coverage/
+          !server/test/
+          !server/*.test.js
 
   deploy-server:
-    needs: [test, lint, security-scan]
+    needs: [build]
     runs-on: ubuntu-latest
+    container: ghcr.io/railwayapp/cli:latest
     if: github.ref == 'refs/heads/main'
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      CI: true
     
     steps:
-    - uses: actions/checkout@v4
+    - name: Download Server Deployment Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: server-deploy
+        path: ./
     
-    - name: Deploy Server to Railway
-      run: |
-        curl -fsSL https://railway.app/install.sh | sh
-        export PATH=$PATH:$HOME/.railway/bin
-        cd server
-        railway up --service=${{ secrets.RAILWAY_SERVICE_ID }}
-      env:
-        RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+    - name: Deploy to Railway
+      working-directory: ./server
+      run: railway up --service=${{ secrets.RAILWAY_SERVICE_ID }} --detach
     
     - name: Wait for Server Deployment
-      run: sleep 30  # Give server time to fully deploy
+      run: sleep 60  # Give server more time to fully deploy
     
     - name: Verify Server Health
       run: |
-        # Test server health endpoint
+        # Test server health endpoint with retries
         SERVER_URL="${{ secrets.RAILWAY_SERVER_URL }}"
         if [ -n "$SERVER_URL" ]; then
-          curl -f "$SERVER_URL/api/health" || exit 1
+          echo "Testing health endpoint: $SERVER_URL/api/health"
+          
+          # Retry health check up to 5 times with 10 second intervals
+          for i in {1..5}; do
+            echo "Health check attempt $i/5..."
+            if curl -f -s "$SERVER_URL/api/health"; then
+              echo "Health check passed!"
+              exit 0
+            else
+              echo "Health check failed, waiting 10 seconds..."
+              sleep 10
+            fi
+          done
+          
+          echo "All health check attempts failed"
+          echo "Debugging server status..."
+          curl -v "$SERVER_URL/api/health" || echo "Verbose curl failed"
+          curl -v "$SERVER_URL/" || echo "Root endpoint also failed"
+          exit 1
+        else
+          echo "SERVER_URL secret not configured, skipping health check"
         fi
 
   deploy-client:
-    needs: [deploy-server]
+    needs: [deploy-server, build]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     
     steps:
     - uses: actions/checkout@v4
+    
+    - name: Download Build Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: client-build
+        path: client/dist/
     
     - name: Deploy Client to Vercel
       uses: amondnet/vercel-action@v25
@@ -259,7 +302,7 @@ jobs:
         vercel-token: ${{ secrets.VERCEL_TOKEN }}
         vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
         vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-        vercel-args: '--prod'
+        vercel-args: '--prod --prebuilt'
         working-directory: ./client
     
     - name: Verify Client Deployment

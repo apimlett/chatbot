@@ -1,11 +1,12 @@
 [build]
-cmd = "npm run build"
-watchPatterns = ["server/**"]
+cmd = "echo 'Build skipped - using GitHub Actions artifacts'"
+watchPatterns = []
 
 [deploy]
 healthcheckPath = "/api/health"
+healthcheckTimeout = 60
 restartPolicyType = "on_failure"
-restartPolicyMaxRetries = 3
+restartPolicyMaxRetries = 5
 
 [env]
 NODE_ENV = "production"
