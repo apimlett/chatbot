@@ -4,7 +4,6 @@ const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const { body, validationResult } = require("express-validator");
 const dotenv = require("dotenv");
-const OpenAI = require("openai");
 const path = require("path");
 
 // Load environment variables
@@ -14,12 +13,6 @@ dotenv.config({ path: path.resolve(__dirname, '.env') });
 if (!process.env.NODE_ENV) {
   process.env.NODE_ENV = 'production';
   console.log("NODE_ENV not set, defaulting to 'production'");
-}
-
-// Validate required environment variables
-if (!process.env.OPENAI_API_KEY) {
-  console.error("ERROR: OPENAI_API_KEY environment variable is required");
-  process.exit(1);
 }
 
 const app = express();
@@ -68,30 +61,20 @@ app.use(cors({
 // Body parsing with size limits
 app.use(express.json({ limit: '10mb' }));
 
-// Rate limiting
-const chatLimiter = rateLimit({
+// Rate limiting - general API rate limiter
+const apiLimiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes default
   max: parseInt(process.env.RATE_LIMIT_MAX) || 100, // 100 requests per windowMs default
-  message: { error: 'Too many chat requests, please try again later.' },
+  message: { error: 'Too many requests, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false
 });
-
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-// System message to set the context
-const systemMessage = {
-  role: "system",
-  content: "You are Cogfusion.ai, an advanced AI assistant designed to help users with cognitive fusion of ideas and problem-solving. You excel at connecting disparate concepts, providing insightful analysis, and helping users think through complex problems. When someone greets you, introduce yourself and offer to help them explore ideas, solve problems, or gain new perspectives."
-};
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'ok',
+    message: 'Server is running',
     timestamp: new Date().toISOString(),
     nodeVersion: process.version,
     nodeEnv: process.env.NODE_ENV,
@@ -99,26 +82,21 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Chat endpoint with validation and rate limiting
-app.post('/api/chat', 
-  chatLimiter,
+// Example API endpoint with validation and rate limiting
+app.post('/api/example', 
+  apiLimiter,
   [
-    body('message')
+    body('data')
+      .optional()
       .custom((value) => {
-        if (typeof value !== 'string') {
-          throw new Error('Message must be a string');
+        if (value !== undefined && typeof value !== 'string') {
+          throw new Error('Data must be a string');
         }
         return true;
       })
-      .isLength({ min: 1, max: 2000 })
-      .withMessage('Message must be between 1 and 2000 characters')
+      .isLength({ max: 1000 })
+      .withMessage('Data must be less than 1000 characters')
       .trim()
-      .custom((value) => {
-        if (!value || value.length === 0) {
-          throw new Error('Message cannot be empty or whitespace only');
-        }
-        return true;
-      })
   ],
   async (req, res) => {
   try {
@@ -132,31 +110,21 @@ app.post('/api/chat',
       });
     }
 
-    const { message, conversationHistory = [] } = req.body;
+    const { data } = req.body;
 
-    // Build the messages array with conversation history
-    const messages = [
-      systemMessage,
-      ...conversationHistory,
-      { role: "user", content: message }
-    ];
+    // Example processing
+    const result = {
+      received: data || 'No data provided',
+      processed: true,
+      timestamp: new Date().toISOString()
+    };
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: messages,
-      temperature: 0.7,
+    res.json({ 
+      success: true,
+      result: result 
     });
-
-    // Validate OpenAI response structure
-    if (!completion.choices || completion.choices.length === 0) {
-      throw new Error('Invalid response from OpenAI API');
-    }
-
-    const response = completion.choices[0].message.content;
-
-    res.json({ response: response });
   } catch (error) {
-    console.error('Chat API Error:', {
+    console.error('API Error:', {
       message: error.message,
       stack: error.stack,
       timestamp: new Date().toISOString()
@@ -169,6 +137,16 @@ app.post('/api/chat',
   }
 });
 
+// Basic GET endpoint example
+app.get('/api/status', (req, res) => {
+  res.json({
+    server: 'Express.js',
+    status: 'running',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
+
 // Start server only if not in test environment
 if (process.env.NODE_ENV !== 'test') {
   app.listen(port, () => {
@@ -176,7 +154,7 @@ if (process.env.NODE_ENV !== 'test') {
     console.log(`Node version: ${process.version}`);
     console.log(`Environment: ${process.env.NODE_ENV}`);
     console.log(`Port: ${port}`);
-    console.log(`OpenAI API Key configured: ${process.env.OPENAI_API_KEY ? 'Yes' : 'No'}`);
+    console.log(`CORS allowed origins: ${allowedOrigins.join(', ')}`);
   });
 }
 

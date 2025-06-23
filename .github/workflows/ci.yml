@@ -39,78 +39,29 @@ jobs:
         ls -la
         echo "Package.json contents:"
         cat package.json
-        echo "Force installing all dependencies..."
-        rm -rf node_modules package-lock.json 2>/dev/null || true
-        npm install --include=dev --verbose
-        echo "Verifying vitest installation..."
-        npm list vitest || echo "vitest still not listed"
-        if [ ! -f "node_modules/.bin/vitest" ]; then
-          echo "Manual vitest installation..."
-          npm install vitest@1.2.2 @vitest/coverage-v8@1.2.2 jsdom@24.0.0 --save-dev
-        fi
-        if [ $? -ne 0 ]; then
-          echo "npm install failed!"
-          exit 1
-        fi
+        echo "Installing dependencies..."
+        npm install --include=dev
         echo "Installation complete. Checking installed packages..."
         npm list --depth=0 || echo "npm list failed"
-        echo "Checking for vitest specifically..."
-        npm list vitest || echo "vitest not found"
-        echo "Checking node_modules structure..."
-        ls -la node_modules/ | head -20 || echo "node_modules directory not found"
-        echo "Checking for .bin directory..."
-        if [ -d "node_modules/.bin" ]; then
-          echo "Found .bin directory with $(ls node_modules/.bin/ | wc -l) files:"
-          ls -la node_modules/.bin/ | head -20
-        else
-          echo ".bin directory does not exist"
-        fi
     
     - name: Install Server Dependencies  
       working-directory: ./server
       run: |
         echo "Installing server dependencies..."
         npm ci
-        echo "Installation complete. Checking for node_modules..."
-        ls -la node_modules/ || echo "node_modules directory not found"
-        if [ -d "node_modules/.bin" ]; then
-          echo "Found .bin directory:"
-          ls -la node_modules/.bin/
-        else
-          echo ".bin directory does not exist"
-        fi
+        echo "Installation complete."
     
     - name: Run Client Tests
       working-directory: ./client
       run: |
         echo "Running client tests..."
-        echo "Checking if vitest binary exists..."
-        if [ -f "./node_modules/.bin/vitest" ]; then
-          echo "Found vitest binary, running tests..."
-          ./node_modules/.bin/vitest run --reporter=basic
-          echo "Client tests passed, now running with coverage..."
-          ./node_modules/.bin/vitest run --coverage
-        else
-          echo "ERROR: vitest binary not found at ./node_modules/.bin/vitest"
-          echo "Available binaries:"
-          ls -la node_modules/.bin/ || echo "No .bin directory"
-          echo "Trying manual installation and execution..."
-          npm install vitest@1.2.2 @vitest/coverage-v8@1.2.2 jsdom@24.0.0
-          if [ -f "./node_modules/.bin/vitest" ]; then
-            echo "Manual installation successful, running tests..."
-            ./node_modules/.bin/vitest run --reporter=basic
-            ./node_modules/.bin/vitest run --coverage
-          else
-            echo "All methods failed, running basic test command..."
-            npx vitest@1.2.2 run --reporter=basic --config=/dev/null src/**/*.test.js
-          fi
-        fi
+        npm test
+        echo "Client tests completed."
     
     - name: Run Server Tests
       working-directory: ./server
       env:
         NODE_ENV: test
-        OPENAI_API_KEY: test-api-key
         ALLOWED_ORIGINS: http://localhost:3000,http://localhost:5173
         RATE_LIMIT_WINDOW_MS: 1000
         RATE_LIMIT_MAX: 50
@@ -118,14 +69,8 @@ jobs:
         echo "Running server tests..."
         echo "Environment variables:"
         echo "NODE_ENV: $NODE_ENV"
-        echo "OPENAI_API_KEY: $OPENAI_API_KEY"
-        echo "First, let's run tests with verbose output to see what's failing..."
-        npm test -- --verbose || echo "Tests failed, let's see detailed output"
-        echo "Running test:pre-commit to see if silent mode is the issue..."
-        npm run test:pre-commit || echo "Pre-commit tests failed"
-        echo "Running coverage tests..."
-        npm run test:coverage || echo "Coverage tests failed"
-    
+        npm test
+        echo "Server tests completed."
     
     - name: Upload Coverage Reports
       uses: codecov/codecov-action@v4
@@ -231,110 +176,112 @@ jobs:
           !server/test/
           !server/*.test.js
 
-  deploy-server:
-    needs: [build]
-    runs-on: ubuntu-latest
-    container: ghcr.io/railwayapp/cli:latest
-    if: github.ref == 'refs/heads/main'
-    env:
-      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Download Server Deployment Artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: server-deploy
-        path: ./server-built/
-    
-    - name: Replace server with built version
-      run: |
-        rm -rf ./server/node_modules || true
-        cp -r ./server-built/* ./server/
-    
-    - name: Deploy to Railway
-      working-directory: ./server
-      run: railway up --service=${{ secrets.RAILWAY_SERVICE_ID }}
-    
-    - name: Wait for Server Deployment
-      run: sleep 60  # Give server more time to fully deploy
-    
-    - name: Verify Server Health
-      run: |
-        # Install curl in Railway CLI container
-        apk add --no-cache curl
-        
-        # Test server health endpoint with retries
-        SERVER_URL="${{ secrets.RAILWAY_SERVER_URL }}"
-        if [ -n "$SERVER_URL" ]; then
-          # Remove trailing slash from SERVER_URL if present
-          SERVER_URL="${SERVER_URL%/}"
-          echo "Testing health endpoint: $SERVER_URL/api/health"
-          
-          # Retry health check up to 5 times with 10 second intervals
-          for i in {1..5}; do
-            echo "Health check attempt $i/5..."
-            if curl -f -s "$SERVER_URL/api/health"; then
-              echo "Health check passed!"
-              exit 0
-            else
-              echo "Health check failed, waiting 10 seconds..."
-              sleep 10
-            fi
-          done
-          
-          echo "All health check attempts failed"
-          echo "Debugging server status..."
-          curl -v "$SERVER_URL/api/health" || echo "Verbose curl failed"
-          curl -v "$SERVER_URL/" || echo "Root endpoint also failed"
-          exit 1
-        else
-          echo "SERVER_URL secret not configured, skipping health check"
-        fi
+  # DEPLOYMENT JOBS (COMMENTED OUT FOR TEMPLATE USE)
+  # Uncomment and configure these when you're ready to deploy
+  
+  # deploy-server:
+  #   needs: [build]
+  #   runs-on: ubuntu-latest
+  #   container: ghcr.io/railwayapp/cli:latest
+  #   if: github.ref == 'refs/heads/main'
+  #   env:
+  #     RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+  #   
+  #   steps:
+  #   - name: Checkout code
+  #     uses: actions/checkout@v4
+  #   
+  #   - name: Download Server Deployment Artifacts
+  #     uses: actions/download-artifact@v4
+  #     with:
+  #       name: server-deploy
+  #       path: ./server-built/
+  #   
+  #   - name: Replace server with built version
+  #     run: |
+  #       rm -rf ./server/node_modules || true
+  #       cp -r ./server-built/* ./server/
+  #   
+  #   - name: Deploy to Railway
+  #     working-directory: ./server
+  #     run: railway up --service=${{ secrets.RAILWAY_SERVICE_ID }}
+  #   
+  #   - name: Wait for Server Deployment
+  #     run: sleep 60  # Give server more time to fully deploy
+  #   
+  #   - name: Verify Server Health
+  #     run: |
+  #       # Install curl in Railway CLI container
+  #       apk add --no-cache curl
+  #       
+  #       # Test server health endpoint with retries
+  #       SERVER_URL="${{ secrets.RAILWAY_SERVER_URL }}"
+  #       if [ -n "$SERVER_URL" ]; then
+  #         # Remove trailing slash from SERVER_URL if present
+  #         SERVER_URL="${SERVER_URL%/}"
+  #         echo "Testing health endpoint: $SERVER_URL/api/health"
+  #         
+  #         # Retry health check up to 5 times with 10 second intervals
+  #         for i in {1..5}; do
+  #           echo "Health check attempt $i/5..."
+  #           if curl -f -s "$SERVER_URL/api/health"; then
+  #             echo "Health check passed!"
+  #             exit 0
+  #           else
+  #             echo "Health check failed, waiting 10 seconds..."
+  #             sleep 10
+  #           fi
+  #         done
+  #         
+  #         echo "All health check attempts failed"
+  #         echo "Debugging server status..."
+  #         curl -v "$SERVER_URL/api/health" || echo "Verbose curl failed"
+  #         curl -v "$SERVER_URL/" || echo "Root endpoint also failed"
+  #         exit 1
+  #       else
+  #         echo "SERVER_URL secret not configured, skipping health check"
+  #       fi
 
-  deploy-client:
-    needs: [deploy-server, build]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Use Node.js 20.x
-      uses: actions/setup-node@v4
-      with:
-        node-version: 20.x
-    
-    - name: Install Vercel CLI
-      run: npm install -g vercel@latest
-    
-    - name: Download Build Artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: client-build
-        path: client/dist/
-    
-    - name: Deploy Client to Vercel
-      env:
-        VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-      working-directory: ./client
-      run: |
-        # Set environment variable for API URL
-        echo "VITE_API_URL=${{ secrets.RAILWAY_SERVER_URL }}" > .env.production
-        
-        # Deploy to Vercel without project linking
-        echo "Deploying to Vercel..."
-        vercel deploy --prod --token=$VERCEL_TOKEN --yes --name=cogfusion-ai-client
-    
-    - name: Verify Client Deployment
-      run: |
-        # Test client deployment
-        CLIENT_URL="${{ secrets.VERCEL_CLIENT_URL }}"
-        if [ -n "$CLIENT_URL" ]; then
-          curl -f "$CLIENT_URL" || exit 1
-        else
-          echo "Client deployment completed but no URL configured for verification"
-        fi
-
+  # deploy-client:
+  #   needs: [deploy-server, build]
+  #   runs-on: ubuntu-latest
+  #   if: github.ref == 'refs/heads/main'
+  #   
+  #   steps:
+  #   - uses: actions/checkout@v4
+  #   
+  #   - name: Use Node.js 20.x
+  #     uses: actions/setup-node@v4
+  #     with:
+  #       node-version: 20.x
+  #   
+  #   - name: Install Vercel CLI
+  #     run: npm install -g vercel@latest
+  #   
+  #   - name: Download Build Artifacts
+  #     uses: actions/download-artifact@v4
+  #     with:
+  #       name: client-build
+  #       path: client/dist/
+  #   
+  #   - name: Deploy Client to Vercel
+  #     env:
+  #       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+  #     working-directory: ./client
+  #     run: |
+  #       # Set environment variable for API URL
+  #       echo "VITE_API_URL=${{ secrets.RAILWAY_SERVER_URL }}" > .env.production
+  #       
+  #       # Deploy to Vercel without project linking
+  #       echo "Deploying to Vercel..."
+  #       vercel deploy --prod --token=$VERCEL_TOKEN --yes --name=your-project-name
+  #   
+  #   - name: Verify Client Deployment
+  #     run: |
+  #       # Test client deployment
+  #       CLIENT_URL="${{ secrets.VERCEL_CLIENT_URL }}"
+  #       if [ -n "$CLIENT_URL" ]; then
+  #         curl -f "$CLIENT_URL" || exit 1
+  #       else
+  #         echo "Client deployment completed but no URL configured for verification"
+  #       fi
