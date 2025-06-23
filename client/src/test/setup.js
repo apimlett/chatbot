@@ -3,17 +3,66 @@ import { setupServer } from 'msw/node'
 import { http, HttpResponse } from 'msw'
 import { createPinia, setActivePinia } from 'pinia'
 
+// Mock CSS imports for Vuetify
+import 'vitest-canvas-mock'
+
+// Mock CSS imports to prevent errors
+global.CSS = { escape: (str) => str }
+
+// Mock ResizeObserver for Vuetify
+global.ResizeObserver = class ResizeObserver {
+  constructor(callback) {
+    this.callback = callback
+  }
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
+// Mock IntersectionObserver for Vuetify
+global.IntersectionObserver = class IntersectionObserver {
+  constructor(callback) {
+    this.callback = callback
+  }
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
 // Create MSW server instance
 export const server = setupServer(
-  // Chat API endpoint mock - catch all /api/chat requests regardless of base URL
-  http.post('*/api/chat', async ({ request }) => {
-    const { message } = await request.json()
-    
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 100))
+  // Health API endpoint mock
+  http.get('*/api/health', () => {
+    return HttpResponse.json({
+      status: 'ok',
+      message: 'Server is running',
+      timestamp: new Date().toISOString(),
+      nodeVersion: process.version,
+      nodeEnv: 'test'
+    })
+  }),
+  
+  // Status API endpoint mock
+  http.get('*/api/status', () => {
+    return HttpResponse.json({
+      server: 'Express.js',
+      status: 'running',
+      timestamp: new Date().toISOString(),
+      uptime: Math.floor(process.uptime())
+    })
+  }),
+  
+  // Example API endpoint mock
+  http.post('*/api/example', async ({ request }) => {
+    const data = await request.json()
     
     return HttpResponse.json({
-      response: `Mock response to: ${message}`
+      success: true,
+      result: {
+        received: data.data || 'No data provided',
+        processed: true,
+        timestamp: new Date().toISOString()
+      }
     })
   })
 )

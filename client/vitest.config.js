@@ -13,6 +13,16 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.js'],
+    // Handle CSS imports in tests
+    css: {
+      modules: {
+        classNameStrategy: 'stable'
+      }
+    },
+    // Mock CSS imports
+    deps: {
+      inline: ['vuetify']
+    },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
