@@ -11,11 +11,19 @@ describe('Chat Application Integration Tests', () => {
   it('completes full user conversation flow', async () => {
     render(App)
     
-    // Initial state: welcome message should be visible
-    expect(screen.getByText("Hello! I'm Cogfusion.ai. How can I help you today?")).toBeTruthy()
+    // Initial state: should be on homepage
+    expect(screen.getByText('Cogbot')).toBeTruthy()
+    expect(screen.getByText('New Chat')).toBeTruthy()
     
-    const input = screen.getAllByPlaceholderText('Type a message...')[0]
-    const button = screen.getAllByRole('button', { name: 'Send' })[0]
+    // Navigate to chat
+    const newChatButton = screen.getByText('New Chat')
+    await fireEvent.click(newChatButton)
+    
+    // Should now see chat interface with welcome message
+    expect(screen.getByText("Hello! I'm Cogbot, your friendly AI assistant. How can I help you today?")).toBeTruthy()
+    
+    const input = screen.getByPlaceholderText('Reply ...')
+    const button = document.querySelector('.send-button')
     
     // Step 1: User types first message
     await fireEvent.update(input, 'What exercises should I do?')
@@ -69,8 +77,12 @@ describe('Chat Application Integration Tests', () => {
   it('handles rapid successive messages correctly', async () => {
     render(App)
     
-    const input = screen.getAllByPlaceholderText('Type a message...')[0]
-    const button = screen.getAllByRole('button', { name: 'Send' })[0]
+    // Navigate to chat first
+    const newChatButton = screen.getByText('New Chat')
+    await fireEvent.click(newChatButton)
+    
+    const input = screen.getByPlaceholderText('Reply ...')
+    const button = document.querySelector('.send-button')
     
     // Send multiple messages one at a time, waiting for each response
     const messages = ['Message 1', 'Message 2', 'Message 3']
@@ -100,8 +112,12 @@ describe('Chat Application Integration Tests', () => {
   it('maintains proper UI state during error recovery', async () => {
     render(App)
     
-    const input = screen.getAllByPlaceholderText('Type a message...')[0]
-    const button = screen.getAllByRole('button', { name: 'Send' })[0]
+    // Navigate to chat first
+    const newChatButton = screen.getByText('New Chat')
+    await fireEvent.click(newChatButton)
+    
+    const input = screen.getByPlaceholderText('Reply ...')
+    const button = document.querySelector('.send-button')
     
     // Send a successful message
     await fireEvent.update(input, 'Working message')
@@ -131,8 +147,12 @@ describe('Chat Application Integration Tests', () => {
     // Initial viewport
     expect(wrapper.container.firstChild.style.height).toBe('800px')
     
-    const input = screen.getAllByPlaceholderText('Type a message...')[0]
-    const button = screen.getAllByRole('button', { name: 'Send' })[0]
+    // Navigate to chat first
+    const newChatButton = screen.getByText('New Chat')
+    await fireEvent.click(newChatButton)
+    
+    const input = screen.getByPlaceholderText('Reply ...')
+    const button = document.querySelector('.send-button')
     
     // Start a conversation
     await fireEvent.update(input, 'Test viewport')
@@ -173,8 +193,12 @@ describe('Chat Application Integration Tests', () => {
   it('handles long conversations without performance issues', async () => {
     render(App)
     
-    const input = screen.getAllByPlaceholderText('Type a message...')[0]
-    const button = screen.getAllByRole('button', { name: 'Send' })[0]
+    // Navigate to chat first
+    const newChatButton = screen.getByText('New Chat')
+    await fireEvent.click(newChatButton)
+    
+    const input = screen.getByPlaceholderText('Reply ...')
+    const button = document.querySelector('.send-button')
     
     // Send multiple messages to test performance (reduced count for faster test)
     const messageCount = 5
@@ -201,15 +225,19 @@ describe('Chat Application Integration Tests', () => {
     })
     
     // Verify the message container exists (scroll functionality)
-    const messageContainer = document.querySelector('.flex-1.overflow-y-auto')
+    const messageContainer = document.querySelector('.messages-container')
     expect(messageContainer).toBeTruthy()
   })
   
   it('validates accessibility features', async () => {
     render(App)
     
-    const input = screen.getAllByPlaceholderText('Type a message...')[0]
-    const button = screen.getAllByRole('button', { name: 'Send' })[0]
+    // Navigate to chat first
+    const newChatButton = screen.getByText('New Chat')
+    await fireEvent.click(newChatButton)
+    
+    const input = screen.getByPlaceholderText('Reply ...')
+    const button = document.querySelector('.send-button')
     
     // Check ARIA attributes and roles
     expect(input).toBeTruthy()

@@ -4,7 +4,7 @@ import axios from 'axios'
 export const useChatStore = defineStore('chat', {
   state: () => ({
     messages: [
-      { id: 1, text: "Hello! I'm Cogfusion.ai. How can I help you today?", type: 'received', timestamp: new Date() }
+      { id: 1, text: "Hello! I'm Cogbot, your friendly AI assistant. How can I help you today?", type: 'received', timestamp: new Date() }
     ],
     isLoading: false,
     error: null,
@@ -96,7 +96,7 @@ export const useChatStore = defineStore('chat', {
     // Clear conversation
     clearConversation() {
       this.messages = [
-        { id: 1, text: "Hello! I'm Cogfusion.ai. How can I help you today?", type: 'received', timestamp: new Date() }
+        { id: 1, text: "Hello! I'm Cogbot, your friendly AI assistant. How can I help you today?", type: 'received', timestamp: new Date() }
       ]
       this.error = null
       this.sessionId = null

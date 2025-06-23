@@ -5,6 +5,12 @@ import { server } from './test/setup'
 import { http, HttpResponse } from 'msw'
 
 describe('App.vue', () => {
+  // Helper function to navigate to chat interface
+  const navigateToChat = async () => {
+    const newChatButton = screen.getByText('New Chat')
+    await fireEvent.click(newChatButton)
+  }
+
   beforeEach(() => {
     // Mock window.innerHeight for viewport tests
     Object.defineProperty(window, 'innerHeight', {
@@ -21,21 +27,39 @@ describe('App.vue', () => {
   afterEach(() => {
     vi.restoreAllMocks()
   })
-  it('renders the chat interface', () => {
+  it('renders the homepage initially', () => {
     render(App)
     
-    // Check for input field
-    expect(screen.getByPlaceholderText('Type a message...')).toBeTruthy()
+    // Check for homepage elements
+    expect(screen.getByText('Cogbot')).toBeTruthy()
+    expect(screen.getByText('Your friendly AI assistant ready to help with questions, conversations, and tasks.')).toBeTruthy()
+    expect(screen.getByText('New Chat')).toBeTruthy()
+  })
+
+  it('navigates from homepage to chat interface', async () => {
+    render(App)
     
-    // Check for send button
-    expect(screen.getByRole('button', { name: 'Send' })).toBeTruthy()
+    // Start on homepage
+    expect(screen.getByText('New Chat')).toBeTruthy()
+    
+    // Click New Chat button
+    const newChatButton = screen.getByText('New Chat')
+    await fireEvent.click(newChatButton)
+    
+    // Should now see chat interface
+    expect(screen.getByPlaceholderText('Reply ...')).toBeTruthy()
+    const sendButton = document.querySelector('.send-button')
+    expect(sendButton).toBeTruthy()
   })
 
   it('sends a message and displays the response', async () => {
     render(App)
     
-    const input = screen.getByPlaceholderText('Type a message...')
-    const button = screen.getByRole('button', { name: 'Send' })
+    // Navigate to chat first
+    await navigateToChat()
+    
+    const input = screen.getByPlaceholderText('Reply ...')
+    const button = document.querySelector('.send-button')
     
     // Type and send a message
     await fireEvent.update(input, 'Hello, AI!')
@@ -53,16 +77,21 @@ describe('App.vue', () => {
   it('handles empty messages', async () => {
     render(App)
     
-    const input = screen.getByPlaceholderText('Type a message...')
-    const button = screen.getByRole('button', { name: 'Send' })
+    // Navigate to chat first
+    await navigateToChat()
+    
+    const input = screen.getByPlaceholderText('Reply ...')
+    const button = document.querySelector('.send-button')
     
     // Try to send empty message
     await fireEvent.update(input, '   ')
     await fireEvent.click(button)
     
-    // Check that no messages were added
-    const messages = document.querySelectorAll('.message')
-    expect(messages.length).toBe(0)
+    // Check that only welcome message is present
+    const userMessages = document.querySelectorAll('.user-message')
+    const assistantMessages = document.querySelectorAll('.assistant-message')
+    expect(userMessages.length).toBe(0)
+    expect(assistantMessages.length).toBe(1) // Only welcome message
   })
 
   it('handles API errors gracefully', async () => {
@@ -75,8 +104,11 @@ describe('App.vue', () => {
     
     render(App)
     
-    const input = screen.getByPlaceholderText('Type a message...')
-    const button = screen.getByRole('button', { name: 'Send' })
+    // Navigate to chat first
+    await navigateToChat()
+    
+    const input = screen.getByPlaceholderText('Reply ...')
+    const button = document.querySelector('.send-button')
     
     // Send a message
     await fireEvent.update(input, 'Test message')
@@ -91,8 +123,11 @@ describe('App.vue', () => {
   it('disables input while sending message', async () => {
     render(App)
     
-    const input = screen.getByPlaceholderText('Type a message...')
-    const button = screen.getByRole('button', { name: 'Send' })
+    // Navigate to chat first
+    await navigateToChat()
+    
+    const input = screen.getByPlaceholderText('Reply ...')
+    const button = document.querySelector('.send-button')
     
     // Send a message
     await fireEvent.update(input, 'Test message')
@@ -112,8 +147,8 @@ describe('App.vue', () => {
   it('maintains message history', async () => {
     render(App)
     
-    const input = screen.getByPlaceholderText('Type a message...')
-    const button = screen.getByRole('button', { name: 'Send' })
+    const input = screen.getByPlaceholderText('Reply ...')
+    const button = document.querySelector('.send-button')
     
     // Send first message
     await fireEvent.update(input, 'First message')
@@ -205,15 +240,15 @@ describe('App.vue', () => {
   it('shows loading indicator while processing message', async () => {
     render(App)
     
-    const input = screen.getByPlaceholderText('Type a message...')
-    const button = screen.getByRole('button', { name: 'Send' })
+    const input = screen.getByPlaceholderText('Reply ...')
+    const button = document.querySelector('.send-button')
     
     // Send a message
     await fireEvent.update(input, 'Test loading')
     await fireEvent.click(button)
     
     // Check for loading dots
-    const loadingDots = document.querySelectorAll('.animate-bounce')
+    const loadingDots = document.querySelectorAll('.dot')
     expect(loadingDots.length).toBe(3)
   })
 
@@ -226,8 +261,8 @@ describe('App.vue', () => {
     
     render(App)
     
-    const input = screen.getByPlaceholderText('Type a message...')
-    const button = screen.getByRole('button', { name: 'Send' })
+    const input = screen.getByPlaceholderText('Reply ...')
+    const button = document.querySelector('.send-button')
     
     await fireEvent.update(input, 'Test scroll')
     await fireEvent.click(button)
@@ -238,10 +273,13 @@ describe('App.vue', () => {
     })
   })
 
-  it('displays initial welcome message', () => {
+  it('displays initial welcome message in chat', async () => {
     render(App)
     
-    expect(screen.getByText("Hello! I'm Cogfusion.ai. How can I help you today?")).toBeTruthy()
+    // Navigate to chat first
+    await navigateToChat()
+    
+    expect(screen.getByText("Hello! I'm Cogbot, your friendly AI assistant. How can I help you today?")).toBeTruthy()
   })
 
   it('handles network timeout errors', async () => {
@@ -254,8 +292,8 @@ describe('App.vue', () => {
     
     render(App)
     
-    const input = screen.getByPlaceholderText('Type a message...')
-    const button = screen.getByRole('button', { name: 'Send' })
+    const input = screen.getByPlaceholderText('Reply ...')
+    const button = document.querySelector('.send-button')
     
     await fireEvent.update(input, 'Timeout test')
     await fireEvent.click(button)
@@ -298,8 +336,8 @@ describe('App.vue', () => {
   it('trims whitespace from messages', async () => {
     render(App)
     
-    const input = screen.getByPlaceholderText('Type a message...')
-    const button = screen.getByRole('button', { name: 'Send' })
+    const input = screen.getByPlaceholderText('Reply ...')
+    const button = document.querySelector('.send-button')
     
     // Send message with leading/trailing spaces
     await fireEvent.update(input, '  Hello World  ')
@@ -316,8 +354,8 @@ describe('App.vue', () => {
     
     render(App)
     
-    const input = screen.getByPlaceholderText('Type a message...')
-    const button = screen.getByRole('button', { name: 'Send' })
+    const input = screen.getByPlaceholderText('Reply ...')
+    const button = document.querySelector('.send-button')
     
     // Send first message and wait for it to complete
     await fireEvent.update(input, 'Message 1')
@@ -340,5 +378,80 @@ describe('App.vue', () => {
     expect(screen.getByText('Message 2')).toBeTruthy()
     
     Date.now = originalDateNow
+  })
+
+  it('shows and handles clear conversation dialog', async () => {
+    render(App)
+    
+    // Navigate to chat first
+    await navigateToChat()
+    
+    const input = screen.getByPlaceholderText('Reply ...')
+    const button = document.querySelector('.send-button')
+    
+    // Send a message first
+    await fireEvent.update(input, 'Test message')
+    await fireEvent.click(button)
+    
+    await waitFor(() => {
+      expect(screen.getByText('Mock response to: Test message')).toBeTruthy()
+    })
+    
+    // Click clear button
+    const clearButton = document.querySelector('[title="Clear conversation"]')
+    expect(clearButton).toBeTruthy()
+    await fireEvent.click(clearButton)
+    
+    // Check dialog appears
+    expect(screen.getByText('Clear Conversation')).toBeTruthy()
+    expect(screen.getByText('Are you sure you want to clear the entire conversation? This action cannot be undone.')).toBeTruthy()
+    
+    // Click confirm
+    const confirmButton = screen.getByText('Clear')
+    await fireEvent.click(confirmButton)
+    
+    // Check that conversation is cleared
+    await waitFor(() => {
+      expect(screen.queryByText('Test message')).toBeFalsy()
+      expect(screen.queryByText('Mock response to: Test message')).toBeFalsy()
+      expect(screen.getByText("Hello! I'm Cogbot, your friendly AI assistant. How can I help you today?")).toBeTruthy()
+    })
+  })
+
+  it('shows exit chat dialog and returns to homepage', async () => {
+    render(App)
+    
+    // Navigate to chat first
+    await navigateToChat()
+    
+    // Send a message to have some conversation
+    const input = screen.getByPlaceholderText('Reply ...')
+    const button = document.querySelector('.send-button')
+    await fireEvent.update(input, 'Test message')
+    await fireEvent.click(button)
+    
+    await waitFor(() => {
+      expect(screen.getByText('Mock response to: Test message')).toBeTruthy()
+    })
+    
+    // Click close button
+    const closeButton = document.querySelector('[title="Close"]')
+    expect(closeButton).toBeTruthy()
+    await fireEvent.click(closeButton)
+    
+    // Check exit dialog appears
+    expect(screen.getByText('End Chat Session')).toBeTruthy()
+    expect(screen.getByText('Are you sure you want to end this chat session? Your conversation will be lost.')).toBeTruthy()
+    
+    // Click confirm
+    const confirmButton = screen.getByText('End Chat')
+    await fireEvent.click(confirmButton)
+    
+    // Should be back on homepage
+    await waitFor(() => {
+      expect(screen.getByText('Cogbot')).toBeTruthy()
+      expect(screen.getByText('New Chat')).toBeTruthy()
+      expect(screen.queryByPlaceholderText('Reply ...')).toBeFalsy()
+    })
   })
 }) 

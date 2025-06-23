@@ -27,8 +27,9 @@ describe('ChatMessage', () => {
     })
 
     expect(getByText('Hello world')).toBeTruthy()
-    expect(container.querySelector('.bg-blue-500')).toBeTruthy()
-    expect(container.querySelector('.text-white')).toBeTruthy()
+    expect(container.querySelector('.user-message')).toBeTruthy()
+    expect(container.querySelector('.user-bubble')).toBeTruthy()
+    expect(container.querySelector('.user-text')).toBeTruthy()
   })
 
   it('renders received message correctly', () => {
@@ -37,8 +38,9 @@ describe('ChatMessage', () => {
     })
 
     expect(getByText('Hello there!')).toBeTruthy()
-    expect(container.querySelector('.bg-gray-200')).toBeTruthy()
-    expect(container.querySelector('.text-gray-800')).toBeTruthy()
+    expect(container.querySelector('.assistant-message')).toBeTruthy()
+    expect(container.querySelector('.assistant-bubble')).toBeTruthy()
+    expect(container.querySelector('.assistant-text')).toBeTruthy()
   })
 
   it('renders markdown in received messages', () => {
@@ -94,7 +96,7 @@ describe('ChatMessage', () => {
       props: { message: receivedMessage }
     })
 
-    expect(sentContainer.querySelector('.justify-end')).toBeTruthy()
-    expect(receivedContainer.querySelector('.justify-start')).toBeTruthy()
+    expect(sentContainer.querySelector('.user-message')).toBeTruthy()
+    expect(receivedContainer.querySelector('.assistant-message')).toBeTruthy()
   })
 })
