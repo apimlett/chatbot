@@ -1,16 +1,10 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/vue'
 import App from './App.vue'
 import { server } from './test/setup'
 import { http, HttpResponse } from 'msw'
 
 describe('App.vue', () => {
-  // Helper function to navigate to chat interface
-  const navigateToChat = async () => {
-    const newChatButton = screen.getByText('New Chat')
-    await fireEvent.click(newChatButton)
-  }
-
   beforeEach(() => {
     // Mock window.innerHeight for viewport tests
     Object.defineProperty(window, 'innerHeight', {
@@ -18,166 +12,63 @@ describe('App.vue', () => {
       configurable: true,
       value: 800,
     })
-    
-    // Mock addEventListener and removeEventListener
-    vi.spyOn(window, 'addEventListener')
-    vi.spyOn(window, 'removeEventListener')
   })
   
   afterEach(() => {
     vi.restoreAllMocks()
   })
-  it('renders the homepage initially', () => {
+
+  it('renders the app interface', () => {
     render(App)
     
-    // Check for homepage elements
-    expect(screen.getByText('Cogbot')).toBeTruthy()
-    expect(screen.getByText('Your friendly AI assistant ready to help with questions, conversations, and tasks.')).toBeTruthy()
-    expect(screen.getByText('New Chat')).toBeTruthy()
+    // Check for main elements
+    expect(screen.getByText('Vue.js + Express Template')).toBeTruthy()
+    expect(screen.getByText('A clean starting point for full-stack applications')).toBeTruthy()
+    expect(screen.getByText('Welcome to Your New Project')).toBeTruthy()
+    expect(screen.getByText('Test API Connection')).toBeTruthy()
   })
 
-  it('navigates from homepage to chat interface', async () => {
+  it('tests API connection successfully', async () => {
     render(App)
     
-    // Start on homepage
-    expect(screen.getByText('New Chat')).toBeTruthy()
-    
-    // Click New Chat button
-    const newChatButton = screen.getByText('New Chat')
-    await fireEvent.click(newChatButton)
-    
-    // Should now see chat interface
-    expect(screen.getByPlaceholderText('Reply ...')).toBeTruthy()
-    const sendButton = document.querySelector('.send-button')
-    expect(sendButton).toBeTruthy()
-  })
-
-  it('sends a message and displays the response', async () => {
-    render(App)
-    
-    // Navigate to chat first
-    await navigateToChat()
-    
-    const input = screen.getByPlaceholderText('Reply ...')
-    const button = document.querySelector('.send-button')
-    
-    // Type and send a message
-    await fireEvent.update(input, 'Hello, AI!')
+    const button = screen.getByText('Test API Connection')
     await fireEvent.click(button)
     
-    // Check if user message is displayed
-    expect(screen.getByText('Hello, AI!')).toBeTruthy()
+    // Check for loading state
+    expect(screen.getByText('Testing...')).toBeTruthy()
     
-    // Wait for and check the response
+    // Wait for API response
     await waitFor(() => {
-      expect(screen.getByText('Mock response to: Hello, AI!')).toBeTruthy()
+      expect(screen.getByText('API Response:')).toBeTruthy()
     })
-  })
-
-  it('handles empty messages', async () => {
-    render(App)
-    
-    // Navigate to chat first
-    await navigateToChat()
-    
-    const input = screen.getByPlaceholderText('Reply ...')
-    const button = document.querySelector('.send-button')
-    
-    // Try to send empty message
-    await fireEvent.update(input, '   ')
-    await fireEvent.click(button)
-    
-    // Check that only welcome message is present
-    const userMessages = document.querySelectorAll('.user-message')
-    const assistantMessages = document.querySelectorAll('.assistant-message')
-    expect(userMessages.length).toBe(0)
-    expect(assistantMessages.length).toBe(1) // Only welcome message
   })
 
   it('handles API errors gracefully', async () => {
     // Mock API error
     server.use(
-      http.post('*/api/chat', () => {
+      http.get('*/api/health', () => {
         return new HttpResponse(null, { status: 500 })
       })
     )
     
     render(App)
     
-    // Navigate to chat first
-    await navigateToChat()
-    
-    const input = screen.getByPlaceholderText('Reply ...')
-    const button = document.querySelector('.send-button')
-    
-    // Send a message
-    await fireEvent.update(input, 'Test message')
+    const button = screen.getByText('Test API Connection')
     await fireEvent.click(button)
     
-    // Check if error message is displayed
+    // Wait for error message
     await waitFor(() => {
-      expect(screen.getByText('Sorry, I encountered an error. Please try again.')).toBeTruthy()
-    })
-  })
-
-  it('disables input while sending message', async () => {
-    render(App)
-    
-    // Navigate to chat first
-    await navigateToChat()
-    
-    const input = screen.getByPlaceholderText('Reply ...')
-    const button = document.querySelector('.send-button')
-    
-    // Send a message
-    await fireEvent.update(input, 'Test message')
-    await fireEvent.click(button)
-    
-    // Check if input is disabled
-    expect(input.disabled).toBe(true)
-    expect(button.disabled).toBe(true)
-    
-    // Wait for response and check if input is enabled again
-    await waitFor(() => {
-      expect(input.disabled).toBe(false)
-      expect(button.disabled).toBe(false)
-    })
-  })
-
-  it('maintains message history', async () => {
-    render(App)
-    
-    const input = screen.getByPlaceholderText('Reply ...')
-    const button = document.querySelector('.send-button')
-    
-    // Send first message
-    await fireEvent.update(input, 'First message')
-    await fireEvent.click(button)
-    
-    // Wait for response
-    await waitFor(() => {
-      expect(screen.getByText('Mock response to: First message')).toBeTruthy()
-    })
-    
-    // Send second message
-    await fireEvent.update(input, 'Second message')
-    await fireEvent.click(button)
-    
-    // Check if both messages and responses are displayed
-    await waitFor(() => {
-      expect(screen.getByText('First message')).toBeTruthy()
-      expect(screen.getByText('Mock response to: First message')).toBeTruthy()
-      expect(screen.getByText('Second message')).toBeTruthy()
-      expect(screen.getByText('Mock response to: Second message')).toBeTruthy()
+      expect(screen.getByText('Error:')).toBeTruthy()
     })
   })
 
   it('sets up viewport height tracking on mount', () => {
+    const addEventListenerSpy = vi.spyOn(window, 'addEventListener')
     render(App)
     
     // Check that event listeners were added
-    expect(window.addEventListener).toHaveBeenCalledWith('resize', expect.any(Function))
-    expect(window.addEventListener).toHaveBeenCalledWith('orientationchange', expect.any(Function))
+    expect(addEventListenerSpy).toHaveBeenCalledWith('resize', expect.any(Function))
+    expect(addEventListenerSpy).toHaveBeenCalledWith('orientationchange', expect.any(Function))
   })
 
   it('updates viewport height on window resize', async () => {
@@ -193,265 +84,4 @@ describe('App.vue', () => {
       expect(wrapper.container.firstChild.style.height).toBe('600px')
     })
   })
-
-  it('updates viewport height on orientation change', async () => {
-    const wrapper = render(App)
-    
-    // Change window height
-    window.innerHeight = 1000
-    
-    // Trigger orientation change event
-    window.dispatchEvent(new Event('orientationchange'))
-    
-    await waitFor(() => {
-      expect(wrapper.container.firstChild.style.height).toBe('1000px')
-    })
-  })
-
-  it('cleans up event listeners on unmount', () => {
-    const wrapper = render(App)
-    
-    // Unmount component
-    wrapper.unmount()
-    
-    // Check that event listeners were removed
-    expect(window.removeEventListener).toHaveBeenCalledWith('resize', expect.any(Function))
-    expect(window.removeEventListener).toHaveBeenCalledWith('orientationchange', expect.any(Function))
-  })
-
-  it('handles Enter key press to send message', async () => {
-    render(App)
-    
-    const input = screen.getByPlaceholderText('Type a message...')
-    
-    // Type message and press Enter
-    await fireEvent.update(input, 'Hello via Enter')
-    await fireEvent.keyUp(input, { key: 'Enter', code: 'Enter' })
-    
-    // Check if message was sent
-    expect(screen.getByText('Hello via Enter')).toBeTruthy()
-    
-    // Wait for response
-    await waitFor(() => {
-      expect(screen.getByText('Mock response to: Hello via Enter')).toBeTruthy()
-    })
-  })
-
-  it('shows loading indicator while processing message', async () => {
-    render(App)
-    
-    const input = screen.getByPlaceholderText('Reply ...')
-    const button = document.querySelector('.send-button')
-    
-    // Send a message
-    await fireEvent.update(input, 'Test loading')
-    await fireEvent.click(button)
-    
-    // Check for loading dots
-    const loadingDots = document.querySelectorAll('.dot')
-    expect(loadingDots.length).toBe(3)
-  })
-
-  it('scrolls to bottom after sending message', async () => {
-    const mockScrollTo = vi.fn()
-    Object.defineProperty(Element.prototype, 'scrollTop', {
-      set: mockScrollTo,
-      configurable: true
-    })
-    
-    render(App)
-    
-    const input = screen.getByPlaceholderText('Reply ...')
-    const button = document.querySelector('.send-button')
-    
-    await fireEvent.update(input, 'Test scroll')
-    await fireEvent.click(button)
-    
-    // Wait for scroll to be called
-    await waitFor(() => {
-      expect(mockScrollTo).toHaveBeenCalled()
-    })
-  })
-
-  it('displays initial welcome message in chat', async () => {
-    render(App)
-    
-    // Navigate to chat first
-    await navigateToChat()
-    
-    expect(screen.getByText("Hello! I'm Cogbot, your friendly AI assistant. How can I help you today?")).toBeTruthy()
-  })
-
-  it('handles network timeout errors', async () => {
-    // Mock network timeout
-    server.use(
-      http.post('*/api/chat', async () => {
-        await new Promise(() => {}) // Never resolves
-      })
-    )
-    
-    render(App)
-    
-    const input = screen.getByPlaceholderText('Reply ...')
-    const button = document.querySelector('.send-button')
-    
-    await fireEvent.update(input, 'Timeout test')
-    await fireEvent.click(button)
-    
-    // Message should be added to history
-    expect(screen.getByText('Timeout test')).toBeTruthy()
-    
-    // Input should be disabled while loading
-    expect(input.disabled).toBe(true)
-    expect(button.disabled).toBe(true)
-  })
-
-  it('handles different HTTP error codes', async () => {
-    const errorCodes = [400, 401, 403, 404, 500, 502, 503]
-    
-    for (const code of errorCodes) {
-      server.use(
-        http.post('*/api/chat', () => {
-          return new HttpResponse(null, { status: code })
-        })
-      )
-      
-      render(App)
-      
-      const input = screen.getByPlaceholderText('Type a message...')
-      const button = screen.getByRole('button', { name: 'Send' })
-      
-      await fireEvent.update(input, `Error ${code} test`)
-      await fireEvent.click(button)
-      
-      await waitFor(() => {
-        expect(screen.getByText('Sorry, I encountered an error. Please try again.')).toBeTruthy()
-      })
-      
-      // Clean up for next iteration
-      document.body.innerHTML = ''
-    }
-  })
-
-  it('trims whitespace from messages', async () => {
-    render(App)
-    
-    const input = screen.getByPlaceholderText('Reply ...')
-    const button = document.querySelector('.send-button')
-    
-    // Send message with leading/trailing spaces
-    await fireEvent.update(input, '  Hello World  ')
-    await fireEvent.click(button)
-    
-    // Should display trimmed message
-    expect(screen.getByText('Hello World')).toBeTruthy()
-  })
-
-  it('generates unique message IDs', async () => {
-    const originalDateNow = Date.now
-    let counter = 1000
-    Date.now = vi.fn(() => counter++)
-    
-    render(App)
-    
-    const input = screen.getByPlaceholderText('Reply ...')
-    const button = document.querySelector('.send-button')
-    
-    // Send first message and wait for it to complete
-    await fireEvent.update(input, 'Message 1')
-    await fireEvent.click(button)
-    
-    await waitFor(() => {
-      expect(screen.getByText('Mock response to: Message 1')).toBeTruthy()
-    })
-    
-    // Send second message and wait for it to complete
-    await fireEvent.update(input, 'Message 2')
-    await fireEvent.click(button)
-    
-    await waitFor(() => {
-      expect(screen.getByText('Mock response to: Message 2')).toBeTruthy()
-    })
-    
-    // Both messages should be visible (indicating unique IDs)
-    expect(screen.getByText('Message 1')).toBeTruthy()
-    expect(screen.getByText('Message 2')).toBeTruthy()
-    
-    Date.now = originalDateNow
-  })
-
-  it('shows and handles clear conversation dialog', async () => {
-    render(App)
-    
-    // Navigate to chat first
-    await navigateToChat()
-    
-    const input = screen.getByPlaceholderText('Reply ...')
-    const button = document.querySelector('.send-button')
-    
-    // Send a message first
-    await fireEvent.update(input, 'Test message')
-    await fireEvent.click(button)
-    
-    await waitFor(() => {
-      expect(screen.getByText('Mock response to: Test message')).toBeTruthy()
-    })
-    
-    // Click clear button
-    const clearButton = document.querySelector('[title="Clear conversation"]')
-    expect(clearButton).toBeTruthy()
-    await fireEvent.click(clearButton)
-    
-    // Check dialog appears
-    expect(screen.getByText('Clear Conversation')).toBeTruthy()
-    expect(screen.getByText('Are you sure you want to clear the entire conversation? This action cannot be undone.')).toBeTruthy()
-    
-    // Click confirm
-    const confirmButton = screen.getByText('Clear')
-    await fireEvent.click(confirmButton)
-    
-    // Check that conversation is cleared
-    await waitFor(() => {
-      expect(screen.queryByText('Test message')).toBeFalsy()
-      expect(screen.queryByText('Mock response to: Test message')).toBeFalsy()
-      expect(screen.getByText("Hello! I'm Cogbot, your friendly AI assistant. How can I help you today?")).toBeTruthy()
-    })
-  })
-
-  it('shows exit chat dialog and returns to homepage', async () => {
-    render(App)
-    
-    // Navigate to chat first
-    await navigateToChat()
-    
-    // Send a message to have some conversation
-    const input = screen.getByPlaceholderText('Reply ...')
-    const button = document.querySelector('.send-button')
-    await fireEvent.update(input, 'Test message')
-    await fireEvent.click(button)
-    
-    await waitFor(() => {
-      expect(screen.getByText('Mock response to: Test message')).toBeTruthy()
-    })
-    
-    // Click close button
-    const closeButton = document.querySelector('[title="Close"]')
-    expect(closeButton).toBeTruthy()
-    await fireEvent.click(closeButton)
-    
-    // Check exit dialog appears
-    expect(screen.getByText('End Chat Session')).toBeTruthy()
-    expect(screen.getByText('Are you sure you want to end this chat session? Your conversation will be lost.')).toBeTruthy()
-    
-    // Click confirm
-    const confirmButton = screen.getByText('End Chat')
-    await fireEvent.click(confirmButton)
-    
-    // Should be back on homepage
-    await waitFor(() => {
-      expect(screen.getByText('Cogbot')).toBeTruthy()
-      expect(screen.getByText('New Chat')).toBeTruthy()
-      expect(screen.queryByPlaceholderText('Reply ...')).toBeFalsy()
-    })
-  })
-}) 
+})
